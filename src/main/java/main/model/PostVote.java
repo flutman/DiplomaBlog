@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Table(name = "post_votes")
 public class PostVote {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private User user;

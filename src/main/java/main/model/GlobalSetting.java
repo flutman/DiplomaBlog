@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Table(name = "global_settings")
 public class GlobalSetting {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(columnDefinition = "varchar(255) not null")
     private String code;

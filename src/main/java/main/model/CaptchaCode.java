@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 @Table(name = "captcha_codes")
 public class CaptchaCode {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime time;

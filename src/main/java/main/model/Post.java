@@ -3,12 +3,13 @@ package main.model;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "posts")
 public class Post {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "is_active")
     private int isActive;
@@ -30,6 +31,14 @@ public class Post {
 
     @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
     private List<PostComment> comments;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "tag2post",
+        joinColumns = {@JoinColumn(name = "post_id")},
+            inverseJoinColumns = {@JoinColumn(name = "tag_id")}
+    )
+    private List<Tag> tags;
+
 
     public int getId() {
         return id;
@@ -109,5 +118,13 @@ public class Post {
 
     public void setComments(List<PostComment> comments) {
         this.comments = comments;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 }

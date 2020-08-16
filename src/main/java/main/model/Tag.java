@@ -1,16 +1,26 @@
 package main.model;
 
 import javax.persistence.*;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "tags")
 public class Tag {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(columnDefinition = "varchar(255) not null")
     private String name;
+
+    @ManyToMany
+    @JoinTable(
+            name = "tag2post",
+            joinColumns = {@JoinColumn(name = "tag_id")},
+            inverseJoinColumns = {@JoinColumn(name = "post_id")}
+    )
+    private List<Post> posts;
 
 
     public int getId() {
@@ -27,5 +37,13 @@ public class Tag {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
     }
 }
