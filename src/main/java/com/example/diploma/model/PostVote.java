@@ -1,24 +1,26 @@
-package main.model;
+package com.example.diploma.model;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "post_comments")
-public class PostComment {
+@Table(name = "post_votes")
+public class PostVote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "parent_id")
-    private int parentId;
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Post post;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private User user;
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "post_id", referencedColumnName = "pid", nullable = false)
+    private Post post;
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime time;
-    @Column(columnDefinition = "text not null")
-    private String text;
+    @Column(columnDefinition = "tinyint not null")
+    private int value;
+
+    public PostVote() {
+    }
 
     public int getId() {
         return id;
@@ -26,22 +28,6 @@ public class PostComment {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public int getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(int parentId) {
-        this.parentId = parentId;
-    }
-
-    public Post getPost() {
-        return post;
-    }
-
-    public void setPost(Post post) {
-        this.post = post;
     }
 
     public User getUser() {
@@ -52,6 +38,14 @@ public class PostComment {
         this.user = user;
     }
 
+    public Post getPost() {
+        return post;
+    }
+
+    public void setPost(Post post) {
+        this.post = post;
+    }
+
     public LocalDateTime getTime() {
         return time;
     }
@@ -60,11 +54,11 @@ public class PostComment {
         this.time = time;
     }
 
-    public String getText() {
-        return text;
+    public int getValue() {
+        return value;
     }
 
-    public void setText(String text) {
-        this.text = text;
+    public void setValue(int value) {
+        this.value = value;
     }
 }

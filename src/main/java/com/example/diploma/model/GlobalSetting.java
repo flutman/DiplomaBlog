@@ -1,4 +1,6 @@
-package main.model;
+package com.example.diploma.model;
+
+import com.example.diploma.enums.GlobalSettings;
 
 import javax.persistence.*;
 
@@ -8,12 +10,14 @@ public class GlobalSetting {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "varchar(255) not null")
-    private String code;
+    private GlobalSettings.Code code;
     @Column(columnDefinition = "varchar(255) not null")
     private String name;
+    @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "varchar(255) not null")
-    private String value;
+    private GlobalSettings.Value value;
 
     public int getId() {
         return id;
@@ -23,11 +27,11 @@ public class GlobalSetting {
         this.id = id;
     }
 
-    public String getCode() {
+    public GlobalSettings.Code getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(GlobalSettings.Code code) {
         this.code = code;
     }
 
@@ -39,11 +43,11 @@ public class GlobalSetting {
         this.name = name;
     }
 
-    public String getValue() {
+    public GlobalSettings.Value getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(GlobalSettings.Value value) {
         this.value = value;
     }
 }

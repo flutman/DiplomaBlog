@@ -1,4 +1,4 @@
-package main.model;
+package com.example.diploma.enums;
 
 public enum ModerationStatus {
     NEW,

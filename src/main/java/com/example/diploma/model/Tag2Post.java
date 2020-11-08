@@ -1,4 +1,4 @@
-package main.model;
+package com.example.diploma.model;
 
 import javax.persistence.*;
 
