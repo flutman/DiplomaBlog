@@ -2,18 +2,21 @@ package com.example.diploma.model;
 
 import com.example.diploma.enums.ModerationStatus;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Entity
 @Table(name = "posts")
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int pid;
+    private int id;
     @Column(name = "is_active", columnDefinition = "TINYINT ")
     private boolean isActive;
     @Enumerated(EnumType.STRING)
@@ -22,13 +25,13 @@ public class Post {
     @ManyToOne(fetch = FetchType.LAZY)
     private User moderator;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "puser_id", referencedColumnName = "id") //inject
+    @JoinColumn(name = "user_id", referencedColumnName = "id") //inject
     private User user;
     @Column(columnDefinition = "datetime not null")
-    private Instant ptime;
+    private Instant time;
     @Column(columnDefinition = "varchar(255) not null")
     private String title;
-    @Column(name = "ptext", columnDefinition = "text not null")
+    @Column(name = "text", columnDefinition = "text not null")
     private String text;
     @Column(name = "view_count", columnDefinition = "int not null")
     private int viewCount;

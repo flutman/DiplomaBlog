@@ -11,10 +11,15 @@ import com.example.diploma.model.Tag;
 import com.example.diploma.repository.PostRepository;
 import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -23,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +36,9 @@ import java.util.stream.Collectors;
 public class PostService {
     private final PostRepository repository;
     private EntityMapper entityMapper;
+
+    @Autowired
+    private EntityManager em;
 
     public PostResponse getPosts(String mode, Pageable pageable) {
         List<Post> posts;
@@ -61,7 +70,16 @@ public class PostService {
                 list = repository.findRecentPosts(pageable);
                 break;
             case "popular":
-                list = repository.findPopularPosts(pageable);
+//                list = repository.getPopularPosts(pageable);
+//                list = repository.getPopularPosts(pageable).map(Map.Entry::getKey);
+                Page<Post> mapEntPost = repository.getPopularPosts(pageable);
+//                mapEntPost.map(item -> {
+//                   Post post = new Post();
+//                    for (Map.Entry<Post, Long> entry : item.entrySet()) {
+//                       post = entry.getKey();
+//                   }
+//                    return post;
+//                });
                 break;
             case "early":
                 list = repository.findEarlyPosts(pageable);
@@ -85,15 +103,15 @@ public class PostService {
     public CalendarDto getCalendar(Integer year) {
         CalendarDto calendarDto = new CalendarDto();
 
-        List<Post> postList = repository.findAllByOrderByPtime();
+        List<Post> postList = repository.findAllByOrderByTime();
         calendarDto.setYears(
                 postList.stream()
-                        .map(p -> LocalDate.ofInstant(p.getPtime(), ZoneId.systemDefault()).getYear())
+                        .map(p -> LocalDate.ofInstant(p.getTime(), ZoneId.systemDefault()).getYear())
                         .collect(Collectors.toSet())
         );
         Map<String, Long> list = postList.stream()
                 .collect(Collectors.groupingBy(p ->
-                        LocalDate.ofInstant(p.getPtime(), ZoneId.systemDefault()).toString(),
+                        LocalDate.ofInstant(p.getTime(), ZoneId.systemDefault()).toString(),
                         Collectors.counting()));
         calendarDto.setPosts(list);
 

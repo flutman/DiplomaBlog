@@ -1,4 +1,4 @@
-INSERT INTO `posts` (`is_active`, `moderation_status`, `moderator_id`, `puser_id`, `ptime` , `title` , `ptext`, `view_count`)
+INSERT INTO `posts` (`is_active`, `moderation_status`, `moderator_id`, `user_id`, `time` , `title` , `text`, `view_count`)
     VALUES
         (1, 'ACCEPTED', 1, 1, NOW() - INTERVAL 8 DAY, 'Третий пост', 'Текст третего поста', 10),
         (1, 'ACCEPTED', 1, 1, NOW() - INTERVAL 7 DAY , 'Четвертый пост', 'Текст четвертого поста', 5),
@@ -9,10 +9,8 @@ INSERT INTO `posts` (`is_active`, `moderation_status`, `moderator_id`, `puser_id
         (1, 'ACCEPTED', 1, 1, NOW() - INTERVAL 2 DAY, 'Девятый пост', 'Текст девятого поста', 1),
         (1, 'NEW', 1, 1, NOW() - INTERVAL 1 DAY, 'Десятый пост', 'Текст десятого поста', 1),
         (1, 'ACCEPTED', 1, 1, NOW() - INTERVAL 2 HOUR, 'Одиннадцатый пост', 'Текст одиннадцатого поста', 1),
-        (1, 'ACCEPTED', 1, 1, NOW(), 'Двенадцатый пост', 'Текст двенадцатого поста', 1);
-
-insert into posts (is_active, moderation_status, moderator_id, puser_id, ptime, title, ptext, view_count)
-    VALUES (1, 'ACCEPTED', '1', '1', '2019-10-22 06:56:02', 'Zapped!', 'enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum mauris', 19),
+        (1, 'ACCEPTED', 1, 1, NOW(), 'Двенадцатый пост', 'Текст двенадцатого поста', 1),
+        (1, 'ACCEPTED', '1', '1', '2019-10-22 06:56:02', 'Zapped!', 'enim sit amet nunc viverra dapibus nulla suscipit ligula in lacus curabitur at ipsum ac tellus semper interdum mauris', 19),
         (1, 'ACCEPTED', '1', '1', '2019-12-18 11:32:25', 'Deep Crimson (Profundo carmesí)', 'nisi at nibh in hac habitasse platea dictumst aliquam augue quam sollicitudin vitae', 77),
         (1, 'ACCEPTED', '1', '1', '2020-06-12 01:01:55', 'Madhouse', 'faucibus cursus urna ut tellus nulla ut erat id mauris vulputate elementum nullam varius nulla facilisi cras non', 52),
         (1, 'ACCEPTED', '1', '1', '2020-08-22 13:33:48', 'Some Days Are Better Than Others', 'vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae duis faucibus accumsan odio curabitur', 63),

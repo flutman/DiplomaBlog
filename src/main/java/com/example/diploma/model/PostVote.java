@@ -12,7 +12,7 @@ public class PostVote {
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private User user;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "post_id", referencedColumnName = "pid", nullable = false)
+    @JoinColumn(name = "post_id", referencedColumnName = "id", nullable = false)
     private Post post;
     @Column(columnDefinition = "datetime not null")
     private LocalDateTime time;

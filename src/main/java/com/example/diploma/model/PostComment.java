@@ -16,7 +16,7 @@ public class PostComment {
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     private PostComment parentPostComment;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, targetEntity = Post.class)
-    @JoinColumn(name = "post_id", referencedColumnName = "pid")
+    @JoinColumn(name = "post_id", referencedColumnName = "id")
     private Post post;
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.DETACH)
     private User user;

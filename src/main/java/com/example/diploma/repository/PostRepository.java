@@ -3,6 +3,7 @@ package com.example.diploma.repository;
 import com.example.diploma.model.Post;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface PostRepository  extends CrudRepository<Post,Integer> {
@@ -45,18 +47,20 @@ public interface PostRepository  extends CrudRepository<Post,Integer> {
    )
    Page<Post> getBestPosts(Pageable pageable);
 
+//SELECT p, COUNT(pc.id) AS comCount FROM Post p LEFT JOIN p.comments pc WHERE p.ptime < NOW() AND p.isActive = 1 AND p.moderationStatus = 'ACCEPTED' GROUP BY p.pid
+//   @Query(
+//           value = "SELECT *, COUNT(pc.id) AS pc_count FROM `posts` p " +
+//                   "LEFT JOIN `post_comments` pc ON p.pid = pc.post_id " +
+//                   " WHERE (p.ptime < NOW() AND `is_active`= 1 AND `moderation_status` = 'ACCEPTED')" +
+//                   " GROUP BY p.pid" +
+//                   " ORDER BY pc_count DESC",
+//           nativeQuery = true
+//   )
+   @Query("SELECT p, COUNT(pc.id) AS comCount FROM Post p LEFT JOIN p.comments pc WHERE p.time < NOW() AND p.isActive = 1 AND p.moderationStatus = 'ACCEPTED' GROUP BY p.id ORDER BY comCount DESC")
+   Page<Post> getPopularPosts(Pageable pageable);
+//   Page<Post> getPopularPosts(Pageable pageable);
 
-   @Query(
-           value = "SELECT *, COUNT(pc.id) AS pc_count FROM `posts` p " +
-                   "LEFT JOIN `post_comments` pc ON p.pid = pc.post_id " +
-                   " WHERE (p.ptime < NOW() AND `is_active`= 1 AND `moderation_status` = 'ACCEPTED')" +
-                   " GROUP BY p.pid" +
-                   " ORDER BY pc_count DESC",
-           nativeQuery = true
-   )
-   Page<Post> findPopularPosts(Pageable pageable);
-
-   List<Post> findAllByOrderByPtime();
+   List<Post> findAllByOrderByTime();
 
    @Query(
            value = "SELECT * FROM `posts` " +

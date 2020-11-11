@@ -25,8 +25,8 @@ public class PostWithCommentsResponse {
     private List<String> tags;
 
     public PostWithCommentsResponse(Post post, List<CommentDto> postComments, List<String> postTags){
-        id = post.getPid();
-        timestamp = post.getPtime().getEpochSecond();
+        id = post.getId();
+        timestamp = post.getTime().getEpochSecond();
         active = post.isActive();
         user = new UserDto(post.getUser());
         title = post.getTitle();
