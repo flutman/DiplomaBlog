@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class PlainPostDto {
     private Integer id;
-    private long time;
+    private long timestamp;
     private UserDto user;
     private String title;
     private String announce;

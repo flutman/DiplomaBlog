@@ -70,16 +70,7 @@ public class PostService {
                 list = repository.findRecentPosts(pageable);
                 break;
             case "popular":
-//                list = repository.getPopularPosts(pageable);
-//                list = repository.getPopularPosts(pageable).map(Map.Entry::getKey);
-                Page<Post> mapEntPost = repository.getPopularPosts(pageable);
-//                mapEntPost.map(item -> {
-//                   Post post = new Post();
-//                    for (Map.Entry<Post, Long> entry : item.entrySet()) {
-//                       post = entry.getKey();
-//                   }
-//                    return post;
-//                });
+                list = repository.getPopularPosts(pageable);
                 break;
             case "early":
                 list = repository.findEarlyPosts(pageable);
@@ -101,9 +92,10 @@ public class PostService {
     }
 
     public CalendarDto getCalendar(Integer year) {
+        //TODO check response. Wrong lastDate in Calendar
         CalendarDto calendarDto = new CalendarDto();
 
-        List<Post> postList = repository.findAllByOrderByTime();
+        List<Post> postList = repository.getPostsForCalendar();
         calendarDto.setYears(
                 postList.stream()
                         .map(p -> LocalDate.ofInstant(p.getTime(), ZoneId.systemDefault()).getYear())
