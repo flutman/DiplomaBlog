@@ -20,7 +20,7 @@ public class EntityMapper {
         plainPostDto.setId(post.getId());
         plainPostDto.setTitle(post.getTitle());
         plainPostDto.setViewCount(post.getViewCount());
-        plainPostDto.setTime(post.getTime().getEpochSecond());
+        plainPostDto.setTimestamp(post.getTime().getEpochSecond());
         plainPostDto.setUser(userToUserDto(post.getUser()));
         String announce = post.getText().length() > 150 ? post.getText().substring(0, 150) + "..." : post.getText();
         plainPostDto.setAnnounce(announce);
