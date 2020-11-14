@@ -13,13 +13,10 @@ import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
-import java.lang.reflect.Array;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -28,7 +25,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -92,7 +88,6 @@ public class PostService {
     }
 
     public CalendarDto getCalendar(Integer year) {
-        //TODO check response. Wrong lastDate in Calendar
         CalendarDto calendarDto = new CalendarDto();
 
         List<Post> postList = repository.findAllByOrderByTime();

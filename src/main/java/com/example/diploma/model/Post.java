@@ -1,7 +1,6 @@
 package com.example.diploma.model;
 
 import com.example.diploma.enums.ModerationStatus;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
