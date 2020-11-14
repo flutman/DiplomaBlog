@@ -29,7 +29,8 @@ public interface PostRepository  extends CrudRepository<Post,Integer> {
    @Query("SELECT p FROM Post p LEFT JOIN p.comments pc WHERE p.time < NOW() AND p.isActive = 1 AND p.moderationStatus = 'ACCEPTED' GROUP BY p.id ORDER BY COUNT(pc.id) DESC")
    Page<Post> getPopularPosts(Pageable pageable);
 
-   List<Post> findAllByOrderByTime();
+   @Query("SELECT p FROM Post p WHERE isActive = 1 AND moderationStatus = 'ACCEPTED' ORDER BY time")
+   List<Post> getPostsForCalendar();
 
    @Query("SELECT p FROM Post p WHERE time < NOW() AND isActive = 1 AND moderationStatus = 'ACCEPTED' AND (text LIKE %:query% OR title LIKE %:query%)")
    Page<Post> findPostsByQuery(@Param("query") String query, Pageable pageable);

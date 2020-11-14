@@ -90,7 +90,7 @@ public class PostService {
     public CalendarDto getCalendar(Integer year) {
         CalendarDto calendarDto = new CalendarDto();
 
-        List<Post> postList = repository.findAllByOrderByTime();
+        List<Post> postList = repository.getPostsForCalendar();
         calendarDto.setYears(
                 postList.stream()
                         .map(p -> LocalDate.ofInstant(p.getTime(), ZoneId.systemDefault()).getYear())
@@ -98,7 +98,7 @@ public class PostService {
         );
         Map<String, Long> list = postList.stream()
                 .collect(Collectors.groupingBy(p ->
-                        LocalDate.ofInstant(p.getTime(), ZoneId.systemDefault()).toString(),
+                        LocalDate.ofInstant(p.getTime(), ZoneId.of("UTC")).toString(),
                         Collectors.counting()));
         calendarDto.setPosts(list);
 
