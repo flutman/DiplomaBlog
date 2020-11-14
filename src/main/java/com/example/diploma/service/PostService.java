@@ -103,7 +103,7 @@ public class PostService {
         );
         Map<String, Long> list = postList.stream()
                 .collect(Collectors.groupingBy(p ->
-                        LocalDate.ofInstant(p.getTime(), ZoneId.systemDefault()).toString(),
+                        LocalDate.ofInstant(p.getTime(), ZoneId.of("UTC")).toString(),
                         Collectors.counting()));
         calendarDto.setPosts(list);
 
