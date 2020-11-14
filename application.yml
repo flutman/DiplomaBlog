@@ -7,3 +7,5 @@ spring.jpa.hibernate.ddl-auto: validate
 spring.jpa.show-sql: true
 
 spring.flyway.enabled: true
+
+java.runtime.version: 11
