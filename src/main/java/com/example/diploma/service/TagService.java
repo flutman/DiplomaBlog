@@ -1,6 +1,6 @@
 package com.example.diploma.service;
 
-import com.example.diploma.data.TagResponse;
+import com.example.diploma.data.response.TagResponse;
 import com.example.diploma.dto.TagDto;
 import com.example.diploma.mappers.EntityMapper;
 import com.example.diploma.model.Tag;

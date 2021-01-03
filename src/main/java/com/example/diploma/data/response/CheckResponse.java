@@ -1,4 +1,4 @@
-package com.example.diploma.data;
+package com.example.diploma.data.response;
 
 public class CheckResponse {
     private boolean result;

@@ -1,4 +1,4 @@
-package com.example.diploma.data;
+package com.example.diploma.data.response;
 
 import com.example.diploma.dto.PlainPostDto;
 

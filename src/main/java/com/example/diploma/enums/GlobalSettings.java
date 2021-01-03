@@ -15,6 +15,7 @@ public class GlobalSettings {
         public String getName() {
             return name;
         }
+
     }
 
     public enum Value {
@@ -34,6 +35,13 @@ public class GlobalSettings {
 
         public Boolean getValue() {
             return value;
+        }
+
+        @Override
+        public String toString() {
+            return "GlobalSet{" +
+                    "MULTIUSER_MODE='" + super.name() + '\'' + "VAL: " + this.name + " " + this.value +
+                    '}';
         }
     }
 }

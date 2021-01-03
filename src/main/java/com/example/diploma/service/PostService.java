@@ -1,15 +1,15 @@
 package com.example.diploma.service;
 
-import com.example.diploma.data.PostResponse;
-import com.example.diploma.data.PostWithCommentsResponse;
+import com.example.diploma.data.response.PostResponse;
+import com.example.diploma.data.response.PostWithCommentsResponse;
 import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.dto.CommentDto;
 import com.example.diploma.dto.PlainPostDto;
+import com.example.diploma.errors.WrongPageException;
 import com.example.diploma.mappers.EntityMapper;
 import com.example.diploma.model.Post;
 import com.example.diploma.model.Tag;
 import com.example.diploma.repository.PostRepository;
-import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -75,16 +75,22 @@ public class PostService {
         return list;
     }
 
-    public PostWithCommentsResponse getPostById(int id) throws NotFoundException {
-        Post post = repository.findById(id).orElseThrow(() -> new NotFoundException("not found"));
+    public PostWithCommentsResponse getPost(String id) {
+        int postId;
+        Post post;
+        try {
+            postId = Integer.parseInt(id);
+            post = repository.findById(postId).orElseThrow(() -> new WrongPageException("page not found"));
+        } catch (Exception ex) {
+            throw new WrongPageException("page not found");
+        }
+
         List<CommentDto> comments = post.getComments().stream().map(CommentDto::new).collect(Collectors.toList());
         List<String> tags = post.getTags().stream().map(Tag::getName).collect(Collectors.toList());
 
         incViewCount(post);
 
-        PostWithCommentsResponse response = new PostWithCommentsResponse(post, comments, tags);
-
-        return response;
+        return new PostWithCommentsResponse(post, comments, tags);
     }
 
     public CalendarDto getCalendar(Integer year) {

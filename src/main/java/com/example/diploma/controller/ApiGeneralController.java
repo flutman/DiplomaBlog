@@ -1,8 +1,8 @@
 package com.example.diploma.controller;
 
-import com.example.diploma.data.TagResponse;
+import com.example.diploma.data.response.TagResponse;
 import com.example.diploma.dto.CalendarDto;
-import com.example.diploma.dto.StatisticResponse;
+import com.example.diploma.data.response.StatisticResponse;
 import com.example.diploma.service.GlobalSettingService;
 import com.example.diploma.service.PostService;
 import com.example.diploma.service.TagService;

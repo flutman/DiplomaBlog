@@ -1,8 +1,7 @@
 package com.example.diploma.controller;
 
-import com.example.diploma.data.GlobalSettingResponse;
-import com.example.diploma.data.InitResponse;
-import com.example.diploma.dto.SettingsValues;
+import com.example.diploma.data.response.GlobalSettingResponse;
+import com.example.diploma.data.response.InitResponse;
 import com.example.diploma.service.GlobalSettingService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,11 +34,11 @@ public class DefaultController {
     @GetMapping("/api/settings")
     public ResponseEntity<GlobalSettingResponse> getGlobalSettings() {
         GlobalSettingResponse response = new GlobalSettingResponse();
-        SettingsValues settings = globalSettingService.getAllSettings();
-        response.setMULTIUSER_MODE(settings.getMultiuserMode());
-        response.setPOST_PREMODERATION(settings.getPostPremoderation());
-        response.setSTATISTICS_IS_PUBLIC(settings.getStatisticsIsPublic());
-        return ResponseEntity.ok(response);
+        return globalSettingService.getAllSettings2();
+//        response.setMULTIUSER_MODE(settings.getMultiuserMode());
+//        response.setPOST_PREMODERATION(settings.getPostPremoderation());
+//        response.setSTATISTICS_IS_PUBLIC(settings.getStatisticsIsPublic());
+//        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/error")

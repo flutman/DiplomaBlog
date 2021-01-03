@@ -1,10 +1,13 @@
 package com.example.diploma.model;
 
+import lombok.Data;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "captcha_codes")
+@Data
 public class CaptchaCode {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

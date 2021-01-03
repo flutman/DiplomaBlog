@@ -1,7 +1,11 @@
 package com.example.diploma.model;
 
+import com.example.diploma.model.enums.UserRole;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -26,7 +30,11 @@ public class User {
     private String photo;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<PostVote> votes = new ArrayList<>();
 
+    public UserRole getRole(){
+        return isModerator == 1 ? UserRole.MODERATOR : UserRole.USER;
+    }
 
     public int getId() {
         return id;

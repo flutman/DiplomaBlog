@@ -1,9 +1,7 @@
 package com.example.diploma.controller;
 
-import com.example.diploma.data.PostResponse;
-import com.example.diploma.data.PostWithCommentsResponse;
+import com.example.diploma.data.response.PostResponse;
 import com.example.diploma.service.PostService;
-import javassist.NotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +16,10 @@ public class ApiPostController {
     private final PostService postService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostWithCommentsResponse> showPostById(
-            @PathVariable int id
-    ) throws NotFoundException {
-        return ResponseEntity.ok(postService.getPostById(id));
+    public ResponseEntity<?> showPostById(
+            @PathVariable String id
+    ) {
+            return ResponseEntity.ok(postService.getPost(id));
     }
 
     @GetMapping("")

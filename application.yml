@@ -9,3 +9,11 @@ spring.jpa.show-sql: true
 spring.flyway.enabled: true
 
 server.port: ${PORT:8080}
+
+captcha:
+  updateTime: 1
+
+jwt:
+  token:
+    secret: secretkey
+    expired: 86400000
