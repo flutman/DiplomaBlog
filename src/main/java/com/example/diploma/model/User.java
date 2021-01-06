@@ -32,9 +32,9 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<PostVote> votes = new ArrayList<>();
 
-    public UserRole getRole(){
-        return isModerator == 1 ? UserRole.MODERATOR : UserRole.USER;
-    }
+//    public UserRole getRole(){
+//        return isModerator == 1 ? UserRole.MODERATOR : UserRole.USER;
+//    }
 
     public int getId() {
         return id;

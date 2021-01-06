@@ -27,8 +27,8 @@ public class JwtUserDetailsService implements UserDetailsService {
                 .email(user.getEmail())
                 .username(user.getName())
                 .password(user.getPassword())
-                .authorities(user.getRole().getAuthorities())
-                .role(user.getRole())
+//                .authorities(user.getA)
+//                .role(user.getRole())
                 .build();
 
         log.info("IN loadUserByUsername - user with username: {} successfully loaded", username);

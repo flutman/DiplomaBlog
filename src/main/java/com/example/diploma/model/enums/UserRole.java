@@ -1,27 +1,38 @@
 package com.example.diploma.model.enums;
 
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public enum UserRole {
-    USER(Set.of(Permission.USER)),
-    MODERATOR(Set.of(Permission.USER, Permission.MODERATE));
+public class UserRole implements GrantedAuthority {
+//    USER(Set.of(Permission.USER)),
+//    MODERATOR(Set.of(Permission.USER, Permission.MODERATE));
+//
+//    private final Set<Permission> permissions;
+//
+//    UserRole(Set<Permission> permissions) {
+//        this.permissions = permissions;
+//    }
+//
+//    public Set<Permission> getPermissions() {
+//        return permissions;
+//    }
+//
+//    public Set<SimpleGrantedAuthority> getAuthorities(){
+//        return permissions.stream().map(p -> new SimpleGrantedAuthority(p.getPermission()))
+//                .collect(Collectors.toSet());
+//    }
 
-    private final Set<Permission> permissions;
+    private final String name;
 
-    UserRole(Set<Permission> permissions) {
-        this.permissions = permissions;
+    public UserRole(String name) {
+        this.name = name;
     }
 
-    public Set<Permission> getPermissions() {
-        return permissions;
+    @Override
+    public String getAuthority() {
+        return name;
     }
-
-    public Set<SimpleGrantedAuthority> getAuthorities(){
-        return permissions.stream().map(p -> new SimpleGrantedAuthority(p.getPermission()))
-                .collect(Collectors.toSet());
-    }
-
 }

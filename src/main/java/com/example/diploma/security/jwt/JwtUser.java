@@ -7,6 +7,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -19,11 +21,13 @@ public class JwtUser implements UserDetails {
     private final boolean moderator;
     private final String email;
     private final Collection<? extends GrantedAuthority> authorities;
-    private final UserRole role;
+//    private final UserRole role;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
+        Set<UserRole> roles = new HashSet<>();
+        roles.add(new UserRole("ROLE_USER"));
+        return roles;
     }
 
     @Override

@@ -11,18 +11,16 @@ import com.example.diploma.errors.BadRequestException;
 import com.example.diploma.errors.PostErrorDto;
 import com.example.diploma.model.CaptchaCode;
 import com.example.diploma.model.User;
-import com.example.diploma.model.enums.UserRole;
 import com.example.diploma.repository.CaptchaCodeRepository;
 import com.example.diploma.repository.UserRepository;
-import com.example.diploma.security.jwt.JwtTokenProvider;
 import com.example.diploma.security.jwt.JwtUser;
+import com.example.diploma.security.jwt.JwtUtils;
 import com.example.diploma.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +28,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,7 +36,7 @@ import java.util.stream.Collectors;
 public class UserServiceDefault implements UserService {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
@@ -117,7 +114,7 @@ public class UserServiceDefault implements UserService {
             return response;
         }
 
-        String token = jwtTokenProvider.createToken(username, List.of(user.getRole()));
+        String token = jwtUtils.generateJwtToken(auth);
 
         response.setResult(true);
         response.setToken(token);
