@@ -1,10 +1,12 @@
 package com.example.diploma.controller;
 
 import com.example.diploma.data.response.PostResponse;
+import com.example.diploma.enums.PostModerationStatus;
 import com.example.diploma.service.PostService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -59,6 +61,33 @@ public class ApiPostController {
             @RequestParam String tag
     ) {
         PostResponse response = postService.findPostsByTag(tag, PageRequest.of((int) offset / limit, limit));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/moderation")
+    public ResponseEntity<PostResponse> findPostsForModeration(
+            @RequestParam Integer offset,
+            @RequestParam Integer limit,
+            @RequestParam String tag
+    ) {
+        PostResponse response = postService.findPostsForModeration();
+        return ResponseEntity.ok(response);
+    }
+
+//    @PostMapping("/")
+//    public ResponseEntity createNewPost(){
+//
+//        return ResponseEntity.ok(response);
+//    }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<PostResponse> findMyPosts(
+            @RequestParam Integer offset,
+            @RequestParam Integer limit,
+            @RequestParam PostModerationStatus status
+    ) {
+        PostResponse response = postService.findMyPosts(status, PageRequest.of((int) offset / limit, limit));
         return ResponseEntity.ok(response);
     }
 

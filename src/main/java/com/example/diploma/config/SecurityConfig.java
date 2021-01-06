@@ -32,13 +32,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String ADMIN_ENDPOINT = "/api/v1/admin/**";
     private static final String LOGIN_ENDPOINT = "/api/auth/login";
 
-    @Bean
-    protected DaoAuthenticationProvider daoAuthenticationProvider(){
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(jwtUserDetailsService);
-        return daoAuthenticationProvider;
-    }
+//    @Bean
+//    protected DaoAuthenticationProvider daoAuthenticationProvider(){
+//        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
+//        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+//        daoAuthenticationProvider.setUserDetailsService(jwtUserDetailsService);
+//        return daoAuthenticationProvider;
+//    }
 
     @Bean
     @Override
@@ -64,6 +64,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/auth/logout").hasAnyAuthority(Permission.USER.getPermission(),Permission.USER.getPermission())
                 .anyRequest().authenticated()
                 .and()
+//                .apply(new JwtConfigurer(jwtTokenProvider)).and().logout();
                 .apply(new JwtConfigurer(jwtTokenProvider)).and().logout();
 
     }
@@ -72,4 +73,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(jwtUserDetailsService).passwordEncoder(passwordEncoder());
     }
+
+
 }

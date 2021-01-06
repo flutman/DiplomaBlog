@@ -5,15 +5,20 @@ import com.example.diploma.data.response.PostWithCommentsResponse;
 import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.dto.CommentDto;
 import com.example.diploma.dto.PlainPostDto;
+import com.example.diploma.enums.PostModerationStatus;
 import com.example.diploma.errors.WrongPageException;
 import com.example.diploma.mappers.EntityMapper;
 import com.example.diploma.model.Post;
 import com.example.diploma.model.Tag;
+import com.example.diploma.model.User;
 import com.example.diploma.repository.PostRepository;
+import com.example.diploma.security.jwt.JwtUser;
 import lombok.AllArgsConstructor;
+import org.apache.tomcat.util.descriptor.web.ContextHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -141,6 +146,30 @@ public class PostService {
         List<PlainPostDto> posts = postsPage.stream().map(entityMapper::postToPlainPostDto).collect(Collectors.toList());
 
         PostResponse response = new PostResponse();
+        response.setPosts(posts, postsPage.getTotalElements());
+
+        return response;
+    }
+
+    public PostResponse findPostsForModeration() {
+        PostResponse response = new PostResponse();
+        //TODO fill method
+        return response;
+    }
+
+    public PostResponse findMyPosts(PostModerationStatus status, Pageable pageable) {
+        PostResponse response = new PostResponse();
+
+        JwtUser user = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Page<Post> postsPage = repository.findMyPosts(
+                user.getId(),
+                status.getModerationStatus(),
+                status.isActive(),
+                pageable
+        );
+        List<PlainPostDto> posts = postsPage.stream().map(entityMapper::postToPlainPostDto).collect(Collectors.toList());
+
         response.setPosts(posts, postsPage.getTotalElements());
 
         return response;

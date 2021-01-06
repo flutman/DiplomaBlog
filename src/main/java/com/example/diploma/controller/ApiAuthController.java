@@ -35,8 +35,8 @@ public class ApiAuthController {
 
 
     @GetMapping("/check")
-    public ResponseEntity<CheckResponse> check() {
-        return ResponseEntity.ok(new CheckResponse());
+    public ResponseEntity<LoginResponse> check() {
+        return ResponseEntity.ok(userService.checkUser());
     }
 
     @GetMapping("/captcha")

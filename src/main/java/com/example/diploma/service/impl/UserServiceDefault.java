@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -133,6 +135,35 @@ public class UserServiceDefault implements UserService {
         log.info("Login user.email - {}", authenticationRequest.getEmail());
 
         return response;
+    }
+
+    @Override
+    public LoginResponse checkUser() {
+        LoginResponse response = new LoginResponse();
+
+        if (hasAuthority()) {
+            JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            response.setResult(true);
+            //TODO calculate moderationCount
+            response.setUser(UserResponse.builder()
+                    .id(jwtUser.getId())
+                    .name(jwtUser.getUsername())
+                    .photo(jwtUser.getPhoto())
+                    .email(jwtUser.getEmail())
+                    .moderation(jwtUser.isModerator())
+                    .moderationCount(0)
+                    .settings(true)
+                    .build()
+            );
+        }
+
+        return response;
+    }
+
+    private boolean hasAuthority(){
+        return !SecurityContextHolder
+                .getContext().getAuthentication().getAuthorities()
+                .stream().map(Objects::toString).collect(Collectors.toSet()).contains("ROLE_ANONYMOUS");
     }
 
     @Override

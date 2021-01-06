@@ -21,6 +21,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
+//generate and validate Token
 @Component
 public class JwtTokenProvider {
 
@@ -37,7 +38,6 @@ public class JwtTokenProvider {
         secret = Base64.getEncoder().encodeToString(secret.getBytes());
     }
 
-    //public String createToken(String username, List<UserRole> roles) {
     public String createToken(String username, List<UserRole> roles) {
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("roles", getRoleNames(roles));
@@ -65,7 +65,7 @@ public class JwtTokenProvider {
 
     public String resolveToken(HttpServletRequest req) {
         String bearerToken = req.getHeader("Authorization");
-        if (bearerToken !=null && bearerToken.startsWith("Bearer ")) {
+        if (bearerToken !=null && bearerToken.startsWith("Bearer_")) {
             return bearerToken.substring(7, bearerToken.length());
         }
         return null;

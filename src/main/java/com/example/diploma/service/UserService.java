@@ -11,4 +11,6 @@ public interface UserService {
     LoginResponse login(AuthenticationRequest authenticationRequest);
 
     LoginResponse logout();
+
+    LoginResponse checkUser();
 }
