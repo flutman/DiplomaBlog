@@ -13,8 +13,7 @@ import com.example.diploma.model.CaptchaCode;
 import com.example.diploma.model.User;
 import com.example.diploma.repository.CaptchaCodeRepository;
 import com.example.diploma.repository.UserRepository;
-import com.example.diploma.security.jwt.JwtUser;
-import com.example.diploma.security.jwt.JwtUtils;
+import com.example.diploma.security.SecurityUser;
 import com.example.diploma.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +21,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -36,7 +35,6 @@ import java.util.stream.Collectors;
 public class UserServiceDefault implements UserService {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtUtils jwtUtils;
     private final UserRepository userRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
@@ -102,28 +100,29 @@ public class UserServiceDefault implements UserService {
     @Override
     public LoginResponse login(AuthenticationRequest authenticationRequest) {
         String username = authenticationRequest.getEmail();
+
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, authenticationRequest.getPassword())
         );
         SecurityContextHolder.getContext().setAuthentication(auth);
-        JwtUser user = (JwtUser) auth.getPrincipal();
 
+        SecurityUser securityUser = (SecurityUser) auth.getPrincipal();
+        User currentUser = userRepository.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("username not found"));
         LoginResponse response = new LoginResponse();
-        if (!auth.isAuthenticated()) {
-            response.setResult(false);
-            return response;
-        }
 
-        String token = jwtUtils.generateJwtToken(auth);
+//        if (!auth.isAuthenticated()) {
+//            response.setResult(false);
+//            return response;
+//        }
 
         response.setResult(true);
-        response.setToken(token);
         response.setUser(UserResponse.builder()
-                .id(user.getId())
-                .name(user.getUsername())
-                .photo(user.getPhoto())
-                .email(user.getEmail())
-                .moderation(user.isModerator())
+                .id(currentUser.getId())
+                .name(currentUser.getName())
+                .photo(currentUser.getPhoto())
+                .email(currentUser.getEmail())
+                .moderation(currentUser.getIsModerator() == 1)
                 .moderationCount(0)
                 .settings(true)
                 .build()
@@ -135,32 +134,33 @@ public class UserServiceDefault implements UserService {
     }
 
     @Override
-    public LoginResponse checkUser() {
+    public LoginResponse checkUser(Principal principal) {
         LoginResponse response = new LoginResponse();
-
-        if (hasAuthority()) {
-            JwtUser jwtUser = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            response.setResult(true);
-            //TODO calculate moderationCount
-            response.setUser(UserResponse.builder()
-                    .id(jwtUser.getId())
-                    .name(jwtUser.getUsername())
-                    .photo(jwtUser.getPhoto())
-                    .email(jwtUser.getEmail())
-                    .moderation(jwtUser.isModerator())
-                    .moderationCount(0)
-                    .settings(true)
-                    .build()
-            );
+        if (principal == null) {
+            return response;
         }
 
-        return response;
-    }
+        User user = userRepository.findByEmail(principal.getName())
+                .orElse(new User());
 
-    private boolean hasAuthority(){
-        return !SecurityContextHolder
-                .getContext().getAuthentication().getAuthorities()
-                .stream().map(Objects::toString).collect(Collectors.toSet()).contains("ROLE_ANONYMOUS");
+        if (user == null) {
+            return response;
+        }
+
+        //TODO calculate moderationCount
+        response.setResult(true);
+        response.setUser(UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .photo(user.getPhoto())
+                .email(user.getEmail())
+                .moderation(false)
+                .moderationCount(0)
+                .settings(true)
+                .build()
+        );
+
+        return response;
     }
 
     @Override

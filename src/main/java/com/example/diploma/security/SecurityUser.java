@@ -1,33 +1,24 @@
-package com.example.diploma.security.jwt;
+package com.example.diploma.security;
 
-import com.example.diploma.model.enums.UserRole;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 @Builder
 @Getter
-public class JwtUser implements UserDetails {
-
-    private final int id;
+public class SecurityUser implements UserDetails {
     private final String username;
     private final String password;
-    private final String photo;
-    private final boolean moderator;
-    private final String email;
-    private final Collection<? extends GrantedAuthority> authorities;
-//    private final UserRole role;
+    private final Set<SimpleGrantedAuthority> authorities;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<UserRole> roles = new HashSet<>();
-        roles.add(new UserRole("ROLE_USER"));
-        return roles;
+        return authorities;
     }
 
     @Override
@@ -37,7 +28,7 @@ public class JwtUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override

@@ -12,13 +12,16 @@ import com.example.diploma.model.Post;
 import com.example.diploma.model.Tag;
 import com.example.diploma.model.User;
 import com.example.diploma.repository.PostRepository;
-import com.example.diploma.security.jwt.JwtUser;
+import com.example.diploma.repository.UserRepository;
+import com.example.diploma.security.SecurityUser;
 import lombok.AllArgsConstructor;
-import org.apache.tomcat.util.descriptor.web.ContextHandler;
+import org.flywaydb.core.api.android.ContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
@@ -36,6 +39,9 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class PostService {
     private final PostRepository repository;
+    private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
+
     private EntityMapper entityMapper;
 
     @Autowired
@@ -159,8 +165,9 @@ public class PostService {
 
     public PostResponse findMyPosts(PostModerationStatus status, Pageable pageable) {
         PostResponse response = new PostResponse();
+        String email = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
 
-        JwtUser user = (JwtUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("username not found"));
 
         Page<Post> postsPage = repository.findMyPosts(
                 user.getId(),

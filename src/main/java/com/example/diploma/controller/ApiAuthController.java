@@ -9,7 +9,11 @@ import com.example.diploma.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -18,15 +22,13 @@ import org.springframework.web.bind.annotation.*;
 public class ApiAuthController {
 
     private final CaptchaService captchaService;
-
-
+    private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final UserService userService;
 
-
     @GetMapping("/check")
-    public ResponseEntity<LoginResponse> check() {
-        return ResponseEntity.ok(userService.checkUser());
+    public ResponseEntity<LoginResponse> check(Principal principal) {
+        return ResponseEntity.ok(userService.checkUser(principal));
     }
 
     @GetMapping("/captcha")

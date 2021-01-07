@@ -5,6 +5,9 @@ import com.example.diploma.data.request.RegisterRequest;
 import com.example.diploma.data.response.LoginResponse;
 import com.example.diploma.data.response.RegisterResponse;
 
+import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
+
 public interface UserService {
     RegisterResponse register(RegisterRequest registerRequest);
 
@@ -12,5 +15,5 @@ public interface UserService {
 
     LoginResponse logout();
 
-    LoginResponse checkUser();
+    LoginResponse checkUser(Principal principal);
 }

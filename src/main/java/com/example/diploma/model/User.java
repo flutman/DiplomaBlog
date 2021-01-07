@@ -1,6 +1,6 @@
 package com.example.diploma.model;
 
-import com.example.diploma.model.enums.UserRole;
+import com.example.diploma.model.enums.Role;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -28,13 +28,12 @@ public class User {
     private String code;
     @Column(columnDefinition = "text")
     private String photo;
-
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<PostVote> votes = new ArrayList<>();
 
-//    public UserRole getRole(){
-//        return isModerator == 1 ? UserRole.MODERATOR : UserRole.USER;
-//    }
+    public Role getRole() {
+        return isModerator == 1 ? Role.MODERATOR : Role.USER;
+    }
 
     public int getId() {
         return id;
