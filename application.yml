@@ -8,6 +8,10 @@ spring.jpa.show-sql: true
 
 spring.flyway.enabled: true
 
+spring.servlet.multipart:
+  max-file-size: 200KB
+  max-request-size: 200KB
+
 server.port: ${PORT:8080}
 
 captcha:
@@ -17,3 +21,4 @@ jwt:
   token:
     secret: secretkey
     expired: 86400000
+

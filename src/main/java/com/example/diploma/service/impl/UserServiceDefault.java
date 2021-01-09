@@ -6,9 +6,9 @@ import com.example.diploma.data.response.LoginResponse;
 import com.example.diploma.data.response.type.RegisterErrorResponse;
 import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.UserResponse;
-import com.example.diploma.errors.ApiError;
-import com.example.diploma.errors.BadRequestException;
-import com.example.diploma.errors.PostErrorDto;
+import com.example.diploma.exception.ApiError;
+import com.example.diploma.exception.BadRequestException;
+import com.example.diploma.exception.PostErrorDto;
 import com.example.diploma.model.CaptchaCode;
 import com.example.diploma.model.User;
 import com.example.diploma.repository.CaptchaCodeRepository;
@@ -168,7 +168,7 @@ public class UserServiceDefault implements UserService {
         if (SecurityContextHolder
                 .getContext().getAuthentication().getAuthorities()
                 .stream().map(Object::toString).findFirst().get().equals("ROLE_ANONYMOUS"))
-            throw new BadRequestException(new ApiError(false, new PostErrorDto("error", "Bad")));
+            throw new BadRequestException();
         LoginResponse response = new LoginResponse();
         response.setResult(true);
         return response;

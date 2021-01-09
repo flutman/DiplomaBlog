@@ -5,15 +5,18 @@ import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.data.response.StatisticResponse;
 import com.example.diploma.service.GlobalSettingService;
 import com.example.diploma.service.PostService;
+import com.example.diploma.service.StorageService;
 import com.example.diploma.service.TagService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @AllArgsConstructor
@@ -22,6 +25,7 @@ public class ApiGeneralController {
     private final TagService tagService;
     private final PostService postService;
     private final GlobalSettingService globalSettingService;
+    private final StorageService storageService;
 
     @GetMapping("/tag")
     public ResponseEntity<TagResponse> showTags(@RequestParam(required = false) String query){
@@ -36,6 +40,12 @@ public class ApiGeneralController {
     @GetMapping("/statistics/all")
     public ResponseEntity<StatisticResponse> showStatistics() {
         return globalSettingService.getStatistics();
+    }
+
+    @PreAuthorize("hasAuthority('user:write')")
+    @PostMapping("/image")
+    public String handleFileUpload(@RequestParam MultipartFile image) {
+        return storageService.handleFileUpload(image);
     }
 
 

@@ -1,4 +1,4 @@
-package com.example.diploma.errors;
+package com.example.diploma.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

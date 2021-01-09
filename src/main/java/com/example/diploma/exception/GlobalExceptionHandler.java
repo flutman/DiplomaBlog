@@ -1,4 +1,4 @@
-package com.example.diploma.errors;
+package com.example.diploma.exception;
 
 import javassist.NotFoundException;
 import org.springframework.http.HttpStatus;
@@ -9,6 +9,8 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.util.WebUtils;
 
+import java.util.Map;
+
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
@@ -16,10 +18,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<ApiError> handleBadRequestException(BadRequestException ex, WebRequest req) {
         return handleExceptionInternal(
                 ex,
-                new ApiError(
-                        false,
-                        new PostErrorDto("Заголовок не установлен", "Текст публикации слишком короткий")
-                ),
+                new ApiError(),
                 HttpStatus.BAD_REQUEST,
                 req
         );
@@ -29,11 +28,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     protected ResponseEntity<ApiError> handleBadRequestException(NotFoundException ex, WebRequest req) {
         return handleExceptionInternal(
                 ex,
-                new ApiError(
-                        false,
-                        new PostErrorDto("Данные не найдены", "Данные не найдены")
-                ),
-                HttpStatus.NOT_FOUND,
+                new ApiError(Map.of("post","Пост не найден")),
+                HttpStatus.BAD_REQUEST,
+                req
+        );
+    }
+
+    @ExceptionHandler(value = {UploadException.class})
+    protected ResponseEntity<ApiError> handleBadRequestException(UploadException ex, WebRequest req) {
+        return handleExceptionInternal(
+                ex,
+                new ApiError(Map.of("image","Размер файла превышает допустимый размер")),
+                HttpStatus.BAD_REQUEST,
                 req
         );
     }

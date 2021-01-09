@@ -15,8 +15,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static com.example.diploma.enums.GlobalSettings.Code.*;
 
@@ -106,4 +105,5 @@ public class GlobalSettingService {
 
         return response;
     }
+
 }

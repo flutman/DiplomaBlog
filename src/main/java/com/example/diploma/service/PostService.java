@@ -10,10 +10,10 @@ import com.example.diploma.dto.CommentDto;
 import com.example.diploma.dto.PlainPostDto;
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.enums.PostModerationStatus;
-import com.example.diploma.errors.ApiError;
-import com.example.diploma.errors.NotFoundExeption;
-import com.example.diploma.errors.PostErrorDto;
-import com.example.diploma.errors.WrongPageException;
+import com.example.diploma.exception.ApiError;
+import com.example.diploma.exception.NotFoundException;
+import com.example.diploma.exception.PostErrorDto;
+import com.example.diploma.exception.WrongPageException;
 import com.example.diploma.mappers.EntityMapper;
 import com.example.diploma.model.Post;
 import com.example.diploma.model.Tag;
@@ -239,10 +239,8 @@ public class PostService {
         //update post
         long currentTime = Instant.now().getEpochSecond();
         Post post = repository.findById(id)
-                .orElseThrow(() -> new NotFoundExeption(
-                        new ApiError(
-                                false,
-                                new PostErrorDto("Ошибка поста", "Пост не найден"))
+                .orElseThrow(() -> new NotFoundException(
+                        new ApiError(Map.of("post","Ошибка. Пост не найден"))
                 ));
 
         //delete previous tags
