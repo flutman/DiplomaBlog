@@ -1,4 +1,4 @@
-package com.example.diploma.data.response;
+package com.example.diploma.data.response.type;
 
 import lombok.Data;
 

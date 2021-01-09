@@ -1,10 +1,14 @@
 package com.example.diploma.model;
 
+import lombok.*;
+
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
 @Table(name = "tags")
+@Data
+@NoArgsConstructor
 public class Tag {
 
     @Id
@@ -21,20 +25,12 @@ public class Tag {
     )
     private List<Post> posts;
 
-
-    public int getId() {
-        return id;
+    public Tag(String name, List<Post> posts) {
+        this.name = name;
+        this.posts = posts;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
+    public Tag(String name) {
         this.name = name;
     }
 

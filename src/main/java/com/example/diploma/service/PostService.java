@@ -1,21 +1,28 @@
 package com.example.diploma.service;
 
+import com.example.diploma.data.request.NewPostRequest;
 import com.example.diploma.data.response.PostResponse;
 import com.example.diploma.data.response.PostWithCommentsResponse;
+import com.example.diploma.data.response.base.ResultResponse;
+import com.example.diploma.data.response.type.PostError;
 import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.dto.CommentDto;
 import com.example.diploma.dto.PlainPostDto;
+import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.enums.PostModerationStatus;
+import com.example.diploma.errors.ApiError;
+import com.example.diploma.errors.NotFoundExeption;
+import com.example.diploma.errors.PostErrorDto;
 import com.example.diploma.errors.WrongPageException;
 import com.example.diploma.mappers.EntityMapper;
 import com.example.diploma.model.Post;
 import com.example.diploma.model.Tag;
 import com.example.diploma.model.User;
 import com.example.diploma.repository.PostRepository;
+import com.example.diploma.repository.TagRepository;
 import com.example.diploma.repository.UserRepository;
 import com.example.diploma.security.SecurityUser;
 import lombok.AllArgsConstructor;
-import org.flywaydb.core.api.android.ContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,16 +30,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.Errors;
 
 import javax.persistence.EntityManager;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,6 +44,7 @@ import java.util.stream.Collectors;
 public class PostService {
     private final PostRepository repository;
     private final UserRepository userRepository;
+    private final TagRepository tagRepository;
     private final AuthenticationManager authenticationManager;
 
     private EntityMapper entityMapper;
@@ -115,7 +120,7 @@ public class PostService {
         );
         Map<String, Long> list = postList.stream()
                 .collect(Collectors.groupingBy(p ->
-                        LocalDate.ofInstant(p.getTime(), ZoneId.of("UTC")).toString(),
+                                LocalDate.ofInstant(p.getTime(), ZoneId.of("UTC")).toString(),
                         Collectors.counting()));
         calendarDto.setPosts(list);
 
@@ -124,7 +129,7 @@ public class PostService {
 
     private void incViewCount(Post post) {
         //TODO добавить условия по типу пользователя
-        post.setViewCount(post.getViewCount() + 1);
+        post.toBuilder().viewCount(post.getViewCount() + 1).build();
         repository.save(post);
     }
 
@@ -180,5 +185,107 @@ public class PostService {
         response.setPosts(posts, postsPage.getTotalElements());
 
         return response;
+    }
+
+    @Transactional
+    public ResultResponse<PostError> addNewPost(NewPostRequest request, Errors errors) {
+        ResultResponse<PostError> response = new ResultResponse<>();
+        //check request
+        if (errors.hasErrors()) {
+            response.setResult(false);
+            response.setErrors(getErrors(errors));
+            return response;
+        }
+
+        //create tags
+        List<Tag> tags = new ArrayList<>();
+        if (request.getTags() != null) {
+            request.getTags().forEach(tag -> tags.add(takeTag(tag)));
+        }
+
+        //create post
+        long currentTime = Instant.now().getEpochSecond();
+        Post post = Post.builder()
+                .isActive(request.getActive() == 1)
+                .moderationStatus(ModerationStatus.NEW)
+                .user(getCurrentUser())
+                .tags(tags)
+                .time(Instant.ofEpochSecond(Math.max(currentTime, request.getTimestamp())))
+                .title(request.getTitle())
+                .text(request.getText())
+                .build();
+        repository.save(post);
+
+        return response;
+    }
+
+    @Transactional
+    public ResultResponse<PostError> editPost(int id, NewPostRequest request, Errors errors) {
+        ResultResponse<PostError> response = new ResultResponse<>();
+
+        //check request
+        if (errors.hasErrors()) {
+            response.setResult(false);
+            response.setErrors(getErrors(errors));
+            return response;
+        }
+
+        //check tags
+        List<Tag> tags = new ArrayList<>();
+        if (request.getTags() != null) {
+            request.getTags().forEach(tag -> tags.add(takeTag(tag)));
+        }
+
+        //update post
+        long currentTime = Instant.now().getEpochSecond();
+        Post post = repository.findById(id)
+                .orElseThrow(() -> new NotFoundExeption(
+                        new ApiError(
+                                false,
+                                new PostErrorDto("Ошибка поста", "Пост не найден"))
+                ));
+
+        //delete previous tags
+        List<Tag> prevTags = post.getTags();
+        tagRepository.deleteAll(prevTags);
+
+        ModerationStatus postStatus = (getCurrentUser().getIsModerator() == 1) ?
+                post.getModerationStatus() :
+                ModerationStatus.NEW;
+
+        Post editedPost = post.toBuilder()
+            .isActive(request.getActive() == 1)
+            .moderationStatus(postStatus)
+            .user(getCurrentUser())
+            .tags(tags)
+            .time(Instant.ofEpochSecond(Math.max(currentTime, request.getTimestamp())))
+            .title(request.getTitle())
+            .text(request.getText())
+            .build();
+
+        repository.save(editedPost);
+
+        return response;
+    }
+
+    private Tag takeTag(String name){
+        Tag tag = tagRepository.findByNameIgnoreCase(name);
+        return (tag != null) ? tag : tagRepository.save(new Tag(name));
+    }
+
+    private User getCurrentUser() {
+        String email = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("user not found"));
+    }
+
+    private PostError getErrors(Errors errors) {
+        PostError postErrors = new PostError();
+        if (errors.hasFieldErrors("title")) {
+            postErrors.setTitle(errors.getFieldError("title").getDefaultMessage());
+        }
+        if (errors.hasFieldErrors("text")) {
+            postErrors.setText(errors.getFieldError("text").getDefaultMessage());
+        }
+        return postErrors;
     }
 }

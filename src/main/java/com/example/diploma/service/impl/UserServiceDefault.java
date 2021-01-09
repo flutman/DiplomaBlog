@@ -3,7 +3,7 @@ package com.example.diploma.service.impl;
 import com.example.diploma.data.request.AuthenticationRequest;
 import com.example.diploma.data.request.RegisterRequest;
 import com.example.diploma.data.response.LoginResponse;
-import com.example.diploma.data.response.RegisterErrorResponse;
+import com.example.diploma.data.response.type.RegisterErrorResponse;
 import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.UserResponse;
 import com.example.diploma.errors.ApiError;
@@ -27,7 +27,6 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @Slf4j

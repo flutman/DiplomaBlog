@@ -1,17 +1,20 @@
 package com.example.diploma.model;
 
 import com.example.diploma.enums.ModerationStatus;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
 
 @Getter
-@Setter
+@Builder(toBuilder = true)
 @Entity
 @Table(name = "posts")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,6 +59,4 @@ public class Post {
     )
     private List<Tag> tags;
 
-    public Post() {
-    }
 }

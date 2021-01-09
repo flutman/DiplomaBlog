@@ -1,12 +1,13 @@
 package com.example.diploma.data.response.base;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-public abstract class Response {
+public class ResultResponse<T> {
     private boolean result = true;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private T errors;
 }

@@ -1,5 +1,8 @@
 package com.example.diploma.controller;
 
+import com.example.diploma.data.request.NewPostRequest;
+import com.example.diploma.data.response.base.ResultResponse;
+import com.example.diploma.data.response.type.PostError;
 import com.example.diploma.data.response.PostResponse;
 import com.example.diploma.enums.PostModerationStatus;
 import com.example.diploma.service.PostService;
@@ -8,7 +11,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @Controller
 @AllArgsConstructor
@@ -31,6 +37,27 @@ public class ApiPostController {
             @RequestParam String mode
     ) {
         PostResponse response = postService.getPosts(mode, PageRequest.of((int) offset / limit, limit));
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<ResultResponse<PostError>> addNewPost(
+            @RequestBody @Valid NewPostRequest request,
+            Errors errors
+    ) {
+        ResultResponse<PostError> response = postService.addNewPost(request, errors);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<ResultResponse<PostError>> editPost(
+            @PathVariable int id,
+            @RequestBody @Valid NewPostRequest request,
+            Errors errors
+    ){
+        ResultResponse<PostError> response = postService.editPost(id, request, errors);
         return ResponseEntity.ok(response);
     }
 

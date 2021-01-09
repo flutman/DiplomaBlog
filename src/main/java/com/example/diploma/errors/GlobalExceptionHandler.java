@@ -25,6 +25,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
     }
 
+    @ExceptionHandler(value = {NotFoundException.class})
+    protected ResponseEntity<ApiError> handleBadRequestException(NotFoundException ex, WebRequest req) {
+        return handleExceptionInternal(
+                ex,
+                new ApiError(
+                        false,
+                        new PostErrorDto("Данные не найдены", "Данные не найдены")
+                ),
+                HttpStatus.NOT_FOUND,
+                req
+        );
+    }
+
     @ExceptionHandler(value = {WrongPageException.class})
     protected ResponseEntity<String> handleNotFoundException(WrongPageException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
