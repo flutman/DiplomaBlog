@@ -9,4 +9,8 @@ public class BadRequestException extends RuntimeException {
 
     public BadRequestException () {
     }
+
+    public BadRequestException(ApiError error) {
+        this.error = error;
+    }
 }

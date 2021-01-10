@@ -12,13 +12,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-@Controller
+import java.io.File;
+import java.nio.file.Path;
+
+@RestController
 @AllArgsConstructor
 @RequestMapping("/api")
 public class ApiGeneralController {
@@ -46,6 +46,25 @@ public class ApiGeneralController {
     @PostMapping("/image")
     public String handleFileUpload(@RequestParam MultipartFile image) {
         return storageService.handleFileUpload(image);
+    }
+
+    @GetMapping(value = "/upload/{path1}/{path2}/{path3}/{fileName}")
+    public @ResponseBody
+    byte[] getImage(@PathVariable String path1,
+                    @PathVariable String path2,
+                    @PathVariable String path3,
+                    @PathVariable String fileName) {
+        String route;
+
+        if (path1.equals("default")) {
+            route = new File("").getAbsolutePath()
+                    .concat("/upload/9AO/GK2/XK7/NN1.jpg");
+        } else {
+            route = new File("").getAbsolutePath()
+                    .concat("/upload/" + path1 + "/" + path2 + "/" + path3 + "/" + fileName);
+        }
+
+        return storageService.getImage(Path.of(route));
     }
 
 

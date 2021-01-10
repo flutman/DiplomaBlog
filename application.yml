@@ -12,6 +12,16 @@ spring.servlet.multipart:
   max-file-size: 200KB
   max-request-size: 200KB
 
+spring.mail:
+  host: smtp.gmail.com
+  username: defdevblog@gmail.com
+  password: test123test
+  port: 587
+  smtp.auth: true
+  protocol: smtp
+
+mail.debug: true
+
 server.port: ${PORT:8080}
 
 captcha:
