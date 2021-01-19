@@ -2,6 +2,7 @@ package com.example.diploma.repository;
 
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.model.Post;
+import com.example.diploma.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -44,4 +45,10 @@ public interface PostRepository  extends CrudRepository<Post,Integer> {
 
     @Query("SELECT p FROM Post p WHERE (p.isActive = :active AND p.moderationStatus = :status AND p.user.id = :id)")
     Page<Post> findMyPosts(int id, ModerationStatus status, boolean active, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE (p.isActive = 1 AND p.moderationStatus = :status AND p.moderator IS NULL)")
+    Page<Post> findPostForModeration(ModerationStatus status, Pageable pageable);
+
+    Post findById(int id);
+
 }

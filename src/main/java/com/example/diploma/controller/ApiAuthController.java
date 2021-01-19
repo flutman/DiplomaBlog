@@ -4,23 +4,21 @@ import com.example.diploma.data.request.AuthenticationRequest;
 import com.example.diploma.data.request.PasswordChangeRequest;
 import com.example.diploma.data.request.RegisterRequest;
 import com.example.diploma.data.request.RestorePasswordRequest;
-import com.example.diploma.data.response.*;
+import com.example.diploma.data.response.CaptchaResponse;
+import com.example.diploma.data.response.LoginResponse;
+import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.base.ResultResponse;
 import com.example.diploma.data.response.type.PasswordError;
 import com.example.diploma.data.response.type.PostError;
-import com.example.diploma.repository.UserRepository;
 import com.example.diploma.service.CaptchaService;
 import com.example.diploma.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.transform.Result;
 import java.security.Principal;
 
 @RestController
@@ -30,8 +28,6 @@ import java.security.Principal;
 public class ApiAuthController {
 
     private final CaptchaService captchaService;
-    private final AuthenticationManager authenticationManager;
-    private final UserRepository userRepository;
     private final UserService userService;
 
     @GetMapping("/check")
@@ -75,7 +71,5 @@ public class ApiAuthController {
         ResultResponse<PasswordError> response = userService.changePassword(request);
         return ResponseEntity.ok(response);
     }
-
-
 
 }

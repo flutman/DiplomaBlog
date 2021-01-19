@@ -1,8 +1,6 @@
 package com.example.diploma.service;
 
-import com.example.diploma.exception.ApiError;
 import com.example.diploma.exception.BadRequestException;
-import com.example.diploma.exception.PostErrorDto;
 import com.example.diploma.exception.UploadException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,8 +12,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
@@ -30,8 +26,45 @@ public class StorageService {
         return response;
     }
 
-    //TODO добавить проверку на расширение файла png jpg
-    private String fileUpload (MultipartFile file) {
+    public String handleFileUploadAvatar(MultipartFile file) {
+        String response = "";
+        if (!file.isEmpty()) {
+            response = fileUpload2(file, 35, 35);
+        }
+        return response;
+    }
+
+    private String fileUpload2(MultipartFile file, int imgH, int imgW) {
+        int ind = Objects.requireNonNull(file.getOriginalFilename()).lastIndexOf(".");
+        String ext = file.getOriginalFilename().substring(ind);
+
+        Path path = generatePath("upload/");
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException ex) {
+                throw new BadRequestException();
+            }
+        }
+
+        String fileName = generateName();
+        String imagePath = path.toString() + Path.of(fileName + ext).toString();
+        //transfer and save file on server
+        try {
+            String type = file.getContentType().split("/")[1];
+            BufferedImage img = ImageIO.read(new ByteArrayInputStream(file.getBytes()));
+            img = resizeImage(img, imgH, imgW);
+            //file.transferTo(Path.of(imagePath));
+            ImageIO.write(img, type, new File(imagePath));
+        } catch (Exception exception) {
+            throw new UploadException();
+        }
+        imagePath = imagePath.replace("\\", "/");
+        return imagePath;
+    }
+
+
+    private String fileUpload(MultipartFile file) {
         int ind = Objects.requireNonNull(file.getOriginalFilename()).lastIndexOf(".");
         String ext = file.getOriginalFilename().substring(ind);
 
@@ -53,7 +86,7 @@ public class StorageService {
             throw new UploadException();
         }
         imagePath = imagePath.replace("\\", "/");
-       // imagePath = "img/upload/5NB.jpg";
+        // imagePath = "img/upload/5NB.jpg";
         return imagePath;
     }
 
@@ -75,7 +108,7 @@ public class StorageService {
         return Path.of(strPath.toString());
     }
 
-    private String generateName(){
+    private String generateName() {
         int fileNameLength = 3;
         return generateString(fileNameLength);
     }
@@ -87,22 +120,20 @@ public class StorageService {
         for (int i = 0; i < length; i++) {
             text[i] = characters.charAt(rng.nextInt(characters.length()));
         }
-        return String.format("/%s",new String(text));
+        return String.format("/%s", new String(text));
     }
 
-    //TODO make resize uploaded image
-    private static BufferedImage resizeImage(BufferedImage image) {
-        final int WIDTH = 100;
-        final int HEIGHT = 35;
-        BufferedImage newImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-        int widthStep = image.getWidth() / WIDTH;
-        int heightStep = image.getHeight() / HEIGHT;
-        for (int x = 0; x < WIDTH; x++) {
-            for (int y = 0; y < HEIGHT; y++) {
+    private static BufferedImage resizeImage(BufferedImage image, int height, int weight) {
+        BufferedImage newImage = new BufferedImage(weight, height, BufferedImage.TYPE_INT_RGB);
+        int widthStep = image.getWidth() / weight;
+        int heightStep = image.getHeight() / height;
+        for (int x = 0; x < weight; x++) {
+            for (int y = 0; y < height; y++) {
                 int rgb = image.getRGB(x * widthStep, y * heightStep);
                 newImage.setRGB(x, y, rgb);
             }
         }
         return newImage;
     }
+
 }

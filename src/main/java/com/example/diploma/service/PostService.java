@@ -1,5 +1,6 @@
 package com.example.diploma.service;
 
+import com.example.diploma.data.request.ModerateRequest;
 import com.example.diploma.data.request.NewPostRequest;
 import com.example.diploma.data.response.PostResponse;
 import com.example.diploma.data.response.PostWithCommentsResponse;
@@ -16,6 +17,7 @@ import com.example.diploma.exception.PostErrorDto;
 import com.example.diploma.exception.WrongPageException;
 import com.example.diploma.mappers.EntityMapper;
 import com.example.diploma.model.Post;
+import com.example.diploma.model.PostVote;
 import com.example.diploma.model.Tag;
 import com.example.diploma.model.User;
 import com.example.diploma.repository.PostRepository;
@@ -26,6 +28,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -96,7 +99,7 @@ public class PostService {
         Post post;
         try {
             postId = Integer.parseInt(id);
-            post = repository.findById(postId).orElseThrow(() -> new WrongPageException("page not found"));
+            post = repository.findById(postId);
         } catch (Exception ex) {
             throw new WrongPageException("page not found");
         }
@@ -128,9 +131,10 @@ public class PostService {
     }
 
     private void incViewCount(Post post) {
-        //TODO добавить условия по типу пользователя
-        post.toBuilder().viewCount(post.getViewCount() + 1).build();
-        repository.save(post);
+        if (!post.getUser().equals(getCurrentUser())) {
+            repository.save(post.toBuilder()
+                    .viewCount(post.getViewCount() + 1).build());
+        }
     }
 
     public PostResponse findPostsByQuery(String query, Pageable pageable) {
@@ -162,9 +166,14 @@ public class PostService {
         return response;
     }
 
-    public PostResponse findPostsForModeration() {
+    public PostResponse findPostsForModeration(ModerationStatus status, Pageable pageable) {
+
+        Page<Post> postsPage = repository.findPostForModeration(status, pageable);
+        List<PlainPostDto> posts = postsPage.stream().map(entityMapper::postToPlainPostDto).collect(Collectors.toList());
+
         PostResponse response = new PostResponse();
-        //TODO fill method
+        response.setPosts(posts, postsPage.getTotalElements());
+
         return response;
     }
 
@@ -238,10 +247,7 @@ public class PostService {
 
         //update post
         long currentTime = Instant.now().getEpochSecond();
-        Post post = repository.findById(id)
-                .orElseThrow(() -> new NotFoundException(
-                        new ApiError(Map.of("post","Ошибка. Пост не найден"))
-                ));
+        Post post = repository.findById(id);
 
         //delete previous tags
         List<Tag> prevTags = post.getTags();
@@ -252,21 +258,21 @@ public class PostService {
                 ModerationStatus.NEW;
 
         Post editedPost = post.toBuilder()
-            .isActive(request.getActive() == 1)
-            .moderationStatus(postStatus)
-            .user(getCurrentUser())
-            .tags(tags)
-            .time(Instant.ofEpochSecond(Math.max(currentTime, request.getTimestamp())))
-            .title(request.getTitle())
-            .text(request.getText())
-            .build();
+                .isActive(request.getActive() == 1)
+                .moderationStatus(postStatus)
+                .user(getCurrentUser())
+                .tags(tags)
+                .time(Instant.ofEpochSecond(Math.max(currentTime, request.getTimestamp())))
+                .title(request.getTitle())
+                .text(request.getText())
+                .build();
 
         repository.save(editedPost);
 
         return response;
     }
 
-    private Tag takeTag(String name){
+    private Tag takeTag(String name) {
         Tag tag = tagRepository.findByNameIgnoreCase(name);
         return (tag != null) ? tag : tagRepository.save(new Tag(name));
     }
@@ -286,4 +292,23 @@ public class PostService {
         }
         return postErrors;
     }
+
+    public boolean moderatePost(ModerateRequest request) {
+        try {
+            Post post = repository.findById(request.getPostId());
+            ModerationStatus decision = (request.getDecision().equals("accept")) ?
+                    ModerationStatus.ACCEPTED : ModerationStatus.DECLINED;
+
+            repository.save(post.toBuilder()
+                    .moderationStatus(decision)
+                    .moderator(getCurrentUser())
+                    .build()
+            );
+        } catch (Exception exception) {
+            return false;
+        }
+        return true;
+    }
+
+
 }

@@ -2,39 +2,45 @@ package com.example.diploma.service.impl;
 
 import com.example.diploma.data.request.AuthenticationRequest;
 import com.example.diploma.data.request.PasswordChangeRequest;
+import com.example.diploma.data.request.ProfileRequest;
 import com.example.diploma.data.request.RegisterRequest;
 import com.example.diploma.data.response.LoginResponse;
+import com.example.diploma.data.response.RegisterResponse;
+import com.example.diploma.data.response.UserResponse;
 import com.example.diploma.data.response.base.ResultResponse;
 import com.example.diploma.data.response.type.PasswordError;
 import com.example.diploma.data.response.type.PostError;
 import com.example.diploma.data.response.type.RegisterErrorResponse;
-import com.example.diploma.data.response.RegisterResponse;
-import com.example.diploma.data.response.UserResponse;
+import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.exception.ApiError;
 import com.example.diploma.exception.BadRequestException;
-import com.example.diploma.exception.PostErrorDto;
 import com.example.diploma.model.CaptchaCode;
 import com.example.diploma.model.User;
+import com.example.diploma.model.enums.Permission;
 import com.example.diploma.repository.CaptchaCodeRepository;
+import com.example.diploma.repository.PostRepository;
 import com.example.diploma.repository.UserRepository;
 import com.example.diploma.security.SecurityUser;
 import com.example.diploma.service.MailSender;
+import com.example.diploma.service.StorageService;
 import com.example.diploma.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.Errors;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -43,11 +49,12 @@ public class UserServiceDefault implements UserService {
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
     private final MailSender mailSender;
+    private final StorageService storageService;
 
-    //REGISTER
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
         RegisterResponse response = checkErrors(registerRequest);
@@ -104,7 +111,6 @@ public class UserServiceDefault implements UserService {
         return userRepository.findByEmail(email).isPresent();
     }
 
-    //LOGIN
     @Override
     public LoginResponse login(AuthenticationRequest authenticationRequest) {
         String username = authenticationRequest.getEmail();
@@ -119,15 +125,17 @@ public class UserServiceDefault implements UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("username not found"));
         LoginResponse response = new LoginResponse();
 
+        boolean isModerator = currentUser.getIsModerator() == 1;
+
         response.setResult(true);
         response.setUser(UserResponse.builder()
                 .id(currentUser.getId())
                 .name(currentUser.getName())
                 .photo(currentUser.getPhoto())
                 .email(currentUser.getEmail())
-                .moderation(currentUser.getIsModerator() == 1)
-                .moderationCount(0)
-                .settings(true)
+                .moderation(isModerator)
+                .moderationCount(moderationPostCount(isModerator))
+                .settings(isModerator)
                 .build()
         );
 
@@ -150,27 +158,35 @@ public class UserServiceDefault implements UserService {
             return response;
         }
 
-        //TODO calculate moderationCount
+        boolean isModerator = user.getIsModerator() == 1;
+
         response.setResult(true);
         response.setUser(UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .photo(user.getPhoto())
                 .email(user.getEmail())
-                .moderation(false)
-                .moderationCount(0)
-                .settings(true)
+                .moderation(isModerator)
+                .moderationCount(moderationPostCount(isModerator))
+                .settings(isModerator)
                 .build()
         );
 
         return response;
     }
 
+    private int moderationPostCount(boolean isModerator) {
+        if (isModerator) return 0;
+
+        return (int) postRepository
+                .findPostForModeration(ModerationStatus.NEW, PageRequest.of(0, 10)).getTotalElements();
+    }
+
     @Override
     public ResultResponse<PostError> restorePassword(String email) {
-        //check User exist //TODO via checkEmail
+        //check User exist
         User user = userRepository.findByEmail(email).orElseThrow(
-                ()-> new UsernameNotFoundException("user not found")
+                () -> new UsernameNotFoundException("user not found")
         );
 
         //sendEmail
@@ -191,20 +207,20 @@ public class UserServiceDefault implements UserService {
         ResultResponse<PasswordError> response = new ResultResponse<>();
         PasswordError errors = new PasswordError();
         if (request.getPassword().length() < 6) {
-            errors.addError("password","Пароль короче 6-ти символов");
+            errors.addError("password", "Пароль короче 6-ти символов");
             response.setResult(false);
             response.setErrors(errors);
             return response;
         }
         Optional<User> user = userRepository.findByCode(request.getCode());
         if (user.isEmpty()) {
-            errors.addError("code","Ссылка для восстановления пароля устарела.\n" +
+            errors.addError("code", "Ссылка для восстановления пароля устарела.\n" +
                     "<a href=\n" +
                     "\\\"/auth/restore\\\">Запросить ссылку снова</a>");
         }
         CaptchaCode code = captchaCodeRepository.findBySecretCode(request.getCaptchaSecret()).orElse(new CaptchaCode());
         if (!code.getCode().equals(request.getCaptcha())) {
-            errors.addError("captcha","Код с картинки введен неверно");
+            errors.addError("captcha", "Код с картинки введен неверно");
         }
 
         if (errors.getErrors().size() != 0) {
@@ -223,20 +239,180 @@ public class UserServiceDefault implements UserService {
         return new ResultResponse<>();
     }
 
-    private String generateRestoreMessage(String userName, String activationCode){
+    @Override
+    public ResultResponse<Map<String, String>> editProfile(ProfileRequest request, Errors formErrors) {
+        ResultResponse<Map<String, String>> response = new ResultResponse<>();
+        boolean isChangedEmail = false;
+
+        String currentEmail = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+                .getUsername();
+        User currUser = userRepository.findByEmail(currentEmail).orElseThrow(() -> new BadRequestException(new ApiError()));
+
+        Map<String, String> errors = new HashMap<>();
+        if (formErrors.hasErrors()) {
+            errors.putAll(takeFormErrors(formErrors));
+            response.setErrors(errors);
+            response.setResult(false);
+            return response;
+        }
+
+        errors.putAll(checkEditProfileRequest(
+                request.getName(),
+                request.getEmail(),
+                request.getPassword()
+        ));
+        errors.putAll(checkEmailDuplicate(currentEmail, request.getEmail()));
+
+        if (errors.size() != 0) {
+            response.setResult(false);
+            response.setErrors(errors);
+            return response;
+        }
+
+        Optional.ofNullable(request.getName()).ifPresent(currUser::setName);
+
+        if (!currentEmail.equals(currUser.getEmail())) {
+            isChangedEmail = true;
+        }
+        if (!request.getEmail().isBlank()) {
+            currUser.setEmail(request.getEmail());
+        }
+
+        Optional.ofNullable(request.getPassword()).ifPresent(p -> currUser.setPassword(passwordEncoder.encode(p)));
+
+        if (request.getRemovePhoto() == 1) {
+            currUser.setPhoto("");
+        }
+
+        userRepository.save(currUser);
+
+        if (isChangedEmail) {
+            SecurityContextHolder.clearContext();
+        }
+
+        return response;
+    }
+
+    private Map<String, String> takeFormErrors(Errors errors) {
+        Map<String, String> profileErrors = new HashMap<>();
+
+        errors.getFieldErrors()
+                .forEach(error -> profileErrors.put(error.getField(), error.getDefaultMessage()));
+
+        return profileErrors;
+    }
+
+    @Override
+    public ResultResponse<Map<String, String>> updateProfileWithPhoto(MultipartFile photo,
+                                                                      Boolean removePhoto,
+                                                                      String name,
+                                                                      String email,
+                                                                      String password) {
+        ResultResponse<Map<String, String>> response = new ResultResponse<>();
+        boolean isChangedEmail = false;
+
+        String currentEmail = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+                .getUsername();
+        User currUser = userRepository.findByEmail(currentEmail).orElseThrow(() -> new BadRequestException(new ApiError()));
+
+        Map<String, String> errors = checkEditProfileRequest(name, email, password);
+        errors.putAll(checkEditProfilePhoto(photo));
+
+        if (errors.size() != 0) {
+            response.setResult(false);
+            response.setErrors(errors);
+            return response;
+        }
+
+        String pathToPhoto = storageService.handleFileUploadAvatar(photo);
+        currUser.setPhoto(pathToPhoto);
+
+        Optional.ofNullable(name).ifPresent(currUser::setName);
+        Optional.ofNullable(password).ifPresent(p -> currUser.setPassword(passwordEncoder.encode(p)));
+
+        if (!currentEmail.equals(currUser.getEmail())) {
+            isChangedEmail = true;
+        }
+        if (!email.isBlank()) {
+            currUser.setEmail(email);
+        }
+
+        userRepository.save(currUser);
+
+        if (isChangedEmail) {
+            SecurityContextHolder.clearContext();
+        }
+
+        return response;
+    }
+
+    private Map<String, String> checkEmailDuplicate(String currentEmail, String targetEmail) {
+        Map<String, String> result = new HashMap<>();
+        userRepository.findByEmail(targetEmail)
+                .ifPresent(u -> {
+                    if (!u.getEmail().equals(currentEmail))
+                        result.put("email", "Этот e-mail уже зарегистрирован");
+                });
+        return result;
+    }
+
+    private Map<String, String> checkEditProfilePhoto(MultipartFile file) {
+        Map<String, String> result = new HashMap<>(Collections.emptyMap());
+        Optional.ofNullable(file).map(f -> {
+            if (f.getSize() > 5 * 1024 * 1024) {
+                result.put("photo", "Фото слишком большое, нужно не более 5 Мб");
+            }
+            return false;
+        });
+        return result;
+    }
+
+    private Map<String, String> checkEditProfileRequest(String name, String email, String password) {
+        Map<String, String> result = new HashMap<>(Collections.emptyMap());
+
+        if (email.isBlank()) {
+            result.put("email", "Не указан e-mail");
+        }
+
+        if (password != null) {
+            if (password.length() < 6) {
+                result.put("password", "Пароль короче 6-ти символов");
+            }
+        }
+
+        if (name.isBlank()) {
+            result.put("name", "Имя указано неверно");
+        }
+
+        return result;
+    }
+
+    private String generateRestoreMessage(String userName, String activationCode) {
         return String.format(
                 "Привет, %s! \n Добро пожаловать на сайт DevPub. " +
                         "Для подтверждения перейди по ссылке: http://localhost:8080/login/change-password/%s",
                 userName, activationCode
         );
-
     }
 
     @Override
     public LoginResponse logout() {
-        //TODO обработать ошибку и переделать правильный ApiError
         LoginResponse response = new LoginResponse();
         response.setResult(true);
         return response;
     }
+
+    @Override
+    public User getCurrentUser() {
+        String email = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("user not found"));
+    }
+
+    @Override
+    public boolean getUserPermission(Permission permission) {
+        return SecurityContextHolder.getContext()
+                .getAuthentication().getAuthorities()
+                .contains(new SimpleGrantedAuthority(permission.getPermission()));
+    }
+
 }

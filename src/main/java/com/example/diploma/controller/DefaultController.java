@@ -31,16 +31,6 @@ public class DefaultController {
         return ResponseEntity.ok(new InitResponse());
     }
 
-    @GetMapping("/api/settings")
-    public ResponseEntity<GlobalSettingResponse> getGlobalSettings() {
-        GlobalSettingResponse response = new GlobalSettingResponse();
-        return globalSettingService.getAllSettings2();
-//        response.setMULTIUSER_MODE(settings.getMultiuserMode());
-//        response.setPOST_PREMODERATION(settings.getPostPremoderation());
-//        response.setSTATISTICS_IS_PUBLIC(settings.getStatisticsIsPublic());
-//        return ResponseEntity.ok(response);
-    }
-
     @GetMapping("/error")
     public String handleError(){
         return "forward:";

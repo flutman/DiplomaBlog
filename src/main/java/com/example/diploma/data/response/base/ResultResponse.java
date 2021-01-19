@@ -10,4 +10,8 @@ public class ResultResponse<T> {
     private boolean result = true;
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private T errors;
+
+    public ResultResponse(boolean result) {
+        this.result = result;
+    }
 }

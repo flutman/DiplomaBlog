@@ -17,6 +17,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -35,13 +36,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers("/**","/upload/**").permitAll()
-            .anyRequest()
-                .authenticated()
-                .and()
-                .formLogin().disable()
-                .httpBasic()
-                //.and().logout()
+            .antMatchers("/**", "/upload/**").permitAll()
+            .anyRequest().authenticated()
+            .and()
+            .formLogin().disable()
+            .httpBasic()
+            .and().logout()
+            .logoutSuccessHandler(new SimpleUrlLogoutSuccessHandler())
+            .logoutSuccessUrl("/")
         ;
     }
 
@@ -51,7 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
-    protected DaoAuthenticationProvider daoAuthenticationProvider(){
+    protected DaoAuthenticationProvider daoAuthenticationProvider() {
         DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
         daoAuthenticationProvider.setUserDetailsService(userDetailsService);

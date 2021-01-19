@@ -1,10 +1,16 @@
 package com.example.diploma.service;
 
+import com.example.diploma.data.request.GlobalSettingsRequest;
 import com.example.diploma.data.response.GlobalSettingResponse;
 import com.example.diploma.data.response.StatisticResponse;
 import com.example.diploma.enums.GlobalSettings;
+import com.example.diploma.enums.StatisticsType;
+import com.example.diploma.exception.ApiError;
+import com.example.diploma.exception.BadRequestException;
 import com.example.diploma.model.GlobalSetting;
+import com.example.diploma.model.enums.Permission;
 import com.example.diploma.repository.GlobalSettingRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,26 +18,23 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.HashSet;
+import java.util.List;
 
 import static com.example.diploma.enums.GlobalSettings.Code.*;
 
 @Service
+@AllArgsConstructor
 public class GlobalSettingService {
     private final GlobalSettingRepository repository;
+    private final UserService userService;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
-    private EntityManager em; //TODO удалить. инъекция для тестов
-
-    public GlobalSettingService(GlobalSettingRepository repository){
-        this.repository = repository;
-    }
+    private final JdbcTemplate jdbcTemplate;
 
     public ResponseEntity<GlobalSettingResponse> getAllSettings2() {
         GlobalSettingResponse response = new GlobalSettingResponse();
@@ -60,29 +63,46 @@ public class GlobalSettingService {
         return gs;
     }
 
-    public ResponseEntity<StatisticResponse> getStatistics(){
+    public ResponseEntity<StatisticResponse> getStatistics(StatisticsType type){
         StatisticResponse response = new StatisticResponse();
 
         GlobalSetting pubStatistic = repository.findByCode(STATISTICS_IS_PUBLIC).orElse(generateDefaltGS());
-        if (pubStatistic.getValue() == GlobalSettings.Value.YES) {
-            response = getStatisticsFromDB();
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+
+        if (type.equals(StatisticsType.ALL)) {
+            if (pubStatistic.getValue() == GlobalSettings.Value.YES ||
+                    userService.getUserPermission(Permission.MODERATE)) {
+                response = getStatisticsFromDB(type);
+            } else {
+                return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+            }
         }
+
+        if (type.equals(StatisticsType.MY)){
+            response = getStatisticsFromDB(type);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    private StatisticResponse getStatisticsFromDB() {
+    private StatisticResponse getStatisticsFromDB(StatisticsType type) {
         StatisticResponse response;
 
+        String userCriteria = "";
+        String andUserCriteria = "";
+        if (!userService.getUserPermission(Permission.USER)) {
+            throw new BadRequestException(new ApiError());
+        }
+        if (type.equals(StatisticsType.MY)) {
+            userCriteria = " WHERE user_id = " + userService.getCurrentUser().getId();
+            andUserCriteria = userCriteria.replace("WHERE", "AND");
+        }
         String query = "SELECT " +
-                "(SELECT SUM(view_count) FROM posts) AS viewsCount, " +
-                "(SELECT COUNT(id) FROM posts) AS postsCount, " +
-                "(SELECT COUNT(id) FROM post_votes WHERE value < 0) AS dislikesCount, " +
-                "(SELECT COUNT(id) FROM post_votes WHERE value > 0) AS likesCount, " +
-                "time AS firstPublication " +
-                "FROM posts " +
-                "ORDER BY time ASC " +
+                "(SELECT SUM(view_count) FROM posts" + userCriteria + ") AS viewsCount, " +
+                "(SELECT COUNT(id) FROM posts" + userCriteria + ") AS postsCount, " +
+                "(SELECT COUNT(id) FROM post_votes WHERE value < 0 " + andUserCriteria + ") AS dislikesCount, " +
+                "(SELECT COUNT(id) FROM post_votes WHERE value > 0"  + andUserCriteria + ") AS likesCount, " +
+                "DATE_FORMAT(time,'%Y-%m-%dT%H:%m:%s') AS firstPublication " +
+                "FROM posts " + userCriteria +
+                " ORDER BY time ASC " +
                 "LIMIT 1";
 
         List<StatisticResponse> item = jdbcTemplate.query(query, new RowMapper<StatisticResponse>(){
@@ -94,9 +114,8 @@ public class GlobalSettingService {
                 statisticResponse.setLikesCount(rs.getLong("likesCount"));
                 statisticResponse.setDislikesCount(rs.getLong("dislikesCount"));
                 statisticResponse.setViewsCount(rs.getLong("viewsCount"));
-                statisticResponse.setFirstPublication(rs.getTimestamp("firstPublication").getTime());
+                statisticResponse.setFirstPublication(LocalDateTime.parse(rs.getString("firstPublication")).toEpochSecond(ZoneOffset.UTC));
                 statisticResponse.setPostsCount(rs.getLong("postsCount"));
-
                 return statisticResponse;
             }
         });
@@ -106,4 +125,18 @@ public class GlobalSettingService {
         return response;
     }
 
+    public void setGlobalSettings(GlobalSettingsRequest request) {
+        updateSettings(MULTIUSER_MODE, request.getMultiuserMode());
+        updateSettings(POST_PREMODERATION, request.getPostPremoderation());
+        updateSettings(STATISTICS_IS_PUBLIC, request.getStatisticsIsPublic());
+    }
+
+    private void updateSettings(GlobalSettings.Code code, boolean valueToUpdate) {
+        GlobalSettings.Value value = valueToUpdate ? GlobalSettings.Value.YES : GlobalSettings.Value.NO;
+        GlobalSetting globalSetting = repository.findByCode(code).orElse(generateDefaltGS());
+        if (!value.equals(globalSetting.getValue())){
+            globalSetting.setValue(value);
+            repository.save(globalSetting);
+        }
+    }
 }
