@@ -6,6 +6,7 @@ import com.example.diploma.data.response.base.ResultResponse;
 import com.example.diploma.data.response.type.PostError;
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.enums.PostModerationStatus;
+import com.example.diploma.enums.VoteType;
 import com.example.diploma.service.PostService;
 import com.example.diploma.service.PostVoteService;
 import lombok.AllArgsConstructor;
@@ -29,7 +30,7 @@ public class ApiPostController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> showPostById(
-            @PathVariable String id
+            @PathVariable int id
     ) {
         return ResponseEntity.ok(postService.getPost(id));
     }
@@ -117,20 +118,20 @@ public class ApiPostController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/like")
+    @PostMapping("/{vote}")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<ResultResponse<?>> likeVote(@RequestBody Map<String, Integer> body) {
-        boolean result = postVoteService.likePost(body.getOrDefault("post_id", 0));
+    public ResponseEntity<ResultResponse<?>> vote(@PathVariable VoteType vote, @RequestBody Map<String, Integer> body) {
+        boolean result = postVoteService.vote(vote, body.getOrDefault("post_id", 0));
         ResultResponse<?> response = new ResultResponse<>(result);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/dislike")
-    @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<ResultResponse<?>> dislikeVote(@RequestBody Map<String, Integer> body) {
-        boolean result = postVoteService.dislikePost(body.getOrDefault("post_id", 0));
-        ResultResponse<?> response = new ResultResponse<>(result);
-        return ResponseEntity.ok(response);
-    }
+//    @PostMapping("/dislike")
+//    @PreAuthorize("hasAuthority('user:write')")
+//    public ResponseEntity<ResultResponse<?>> dislikeVote(@RequestBody Map<String, Integer> body) {
+//        boolean result = postVoteService.dislikePost(body.getOrDefault("post_id", 0));
+//        ResultResponse<?> response = new ResultResponse<>(result);
+//        return ResponseEntity.ok(response);
+//    }
 
 }

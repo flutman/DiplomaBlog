@@ -40,8 +40,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .anyRequest().authenticated()
             .and()
             .formLogin().disable()
-            .httpBasic()
-            .and().logout()
+            .httpBasic().disable()
+            .logout()
             .logoutSuccessHandler(new SimpleUrlLogoutSuccessHandler())
             .logoutSuccessUrl("/")
         ;

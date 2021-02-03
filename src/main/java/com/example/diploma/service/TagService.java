@@ -21,9 +21,8 @@ public class TagService {
         this.postRepository = postRepository;
     }
 
-    public TagResponse getAllTags(){
-        List<Tag> tags = new ArrayList<>();
-        repository.findAll().forEach(tags::add);
+    public TagResponse getTags(){
+        List<Tag> tags = new ArrayList<>(repository.findTagOfPublishedPosts());
         EntityMapper entityMapper = new EntityMapper();
 
         List<TagDto> tagsList = new ArrayList<>();

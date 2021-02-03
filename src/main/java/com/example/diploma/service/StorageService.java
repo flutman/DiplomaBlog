@@ -29,15 +29,15 @@ public class StorageService {
     public String handleFileUploadAvatar(MultipartFile file) {
         String response = "";
         if (!file.isEmpty()) {
-            response = fileUpload2(file, 35, 35);
+            response = fileUploadWithSize(file, 35, 35);
         }
         return response;
     }
 
-    private String fileUpload2(MultipartFile file, int imgH, int imgW) {
+    private String fileUploadWithSize(MultipartFile file, int imgH, int imgW) {
         int ind = Objects.requireNonNull(file.getOriginalFilename()).lastIndexOf(".");
         String ext = file.getOriginalFilename().substring(ind);
-
+        //TODO относительный абсолютный путь проверить
         Path path = generatePath("upload/");
         if (!Files.exists(path)) {
             try {
@@ -54,7 +54,6 @@ public class StorageService {
             String type = file.getContentType().split("/")[1];
             BufferedImage img = ImageIO.read(new ByteArrayInputStream(file.getBytes()));
             img = resizeImage(img, imgH, imgW);
-            //file.transferTo(Path.of(imagePath));
             ImageIO.write(img, type, new File(imagePath));
         } catch (Exception exception) {
             throw new UploadException();
@@ -67,7 +66,7 @@ public class StorageService {
     private String fileUpload(MultipartFile file) {
         int ind = Objects.requireNonNull(file.getOriginalFilename()).lastIndexOf(".");
         String ext = file.getOriginalFilename().substring(ind);
-
+        //TODO относительный абсолютный путь проверить
         Path path = generatePath("upload/");
         if (!Files.exists(path)) {
             try {
@@ -86,8 +85,7 @@ public class StorageService {
             throw new UploadException();
         }
         imagePath = imagePath.replace("\\", "/");
-        // imagePath = "img/upload/5NB.jpg";
-        return imagePath;
+        return "/" + imagePath;
     }
 
     public byte[] getImage(Path path) {

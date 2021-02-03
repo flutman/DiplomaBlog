@@ -14,6 +14,10 @@ public class AppConfig {
     private final static int CAPTCHA_LENGTH = 7;
     @Value("${captcha.updateTime:1}")
     private int CAPTCHA_HOURS_TO_BE_UPDATED;
+    @Value("${captcha.image.width:100}")
+    private int CAPTCHA_WIDTH;
+    @Value("${captcha.image.height:35}")
+    private int CAPTCHA_HEIGHT;
 
     public void addSession(String sessionId, Integer userId) {
         sessions.put(sessionId, userId);
@@ -25,6 +29,14 @@ public class AppConfig {
 
     public int getCaptchaHoursToBeUpdated() {
         return CAPTCHA_HOURS_TO_BE_UPDATED;
+    }
+
+    public int getCaptchaWidth() {
+        return CAPTCHA_WIDTH;
+    }
+
+    public int getCaptchaHeight() {
+        return CAPTCHA_HEIGHT;
     }
 
     public Map<String, Integer> getSessions() {

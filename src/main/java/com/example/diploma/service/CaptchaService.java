@@ -6,7 +6,6 @@ import com.example.diploma.model.CaptchaCode;
 import com.example.diploma.repository.CaptchaCodeRepository;
 import com.github.cage.Cage;
 import com.github.cage.GCage;
-import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,13 +22,24 @@ import java.util.Random;
 import java.util.UUID;
 
 @Service
-@AllArgsConstructor
 public class CaptchaService {
 
     private final AppConfig appConfig;
     private final CaptchaCodeRepository captchaCodeRepository;
+    private static int captchaHeight;
+    private static int captchaWight;
 
     private static final Cage CAGE = new GCage();
+
+    public CaptchaService(
+        AppConfig appConfig,
+        CaptchaCodeRepository captchaCodeRepository
+    ){
+        this.appConfig = appConfig;
+        this.captchaCodeRepository = captchaCodeRepository;
+        captchaHeight = appConfig.getCaptchaHeight();
+        captchaWight = appConfig.getCaptchaWidth();
+    }
 
     public CaptchaCode getCaptcha() {
         deleteOutdatedCaptchas(appConfig.getCaptchaHoursToBeUpdated());
@@ -83,13 +93,13 @@ public class CaptchaService {
     }
 
     private static BufferedImage resizeImage(BufferedImage captchaImage) {
-        final int WIDTH = 100;
-        final int HEIGHT = 35;
-        BufferedImage newImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-        int widthStep = captchaImage.getWidth() / WIDTH;
-        int heightStep = captchaImage.getHeight() / HEIGHT;
-        for (int x = 0; x < WIDTH; x++) {
-            for (int y = 0; y < HEIGHT; y++) {
+        final int width = captchaWight;
+        final int height = captchaHeight;
+        BufferedImage newImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        int widthStep = captchaImage.getWidth() / width;
+        int heightStep = captchaImage.getHeight() / height;
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 int rgb = captchaImage.getRGB(x * widthStep, y * heightStep);
                 newImage.setRGB(x, y, rgb);
             }

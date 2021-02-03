@@ -94,15 +94,10 @@ public class PostService {
         return list;
     }
 
-    public PostWithCommentsResponse getPost(String id) {
-        int postId;
-        Post post;
-        try {
-            postId = Integer.parseInt(id);
-            post = repository.findById(postId);
-        } catch (Exception ex) {
-            throw new WrongPageException("page not found");
-        }
+    public PostWithCommentsResponse getPost(Integer id) {
+        Post post = repository.findById(id).orElseThrow(
+                () -> new WrongPageException("page not found")
+        );
 
         List<CommentDto> comments = post.getComments().stream().map(CommentDto::new).collect(Collectors.toList());
         List<String> tags = post.getTags().stream().map(Tag::getName).collect(Collectors.toList());
@@ -229,7 +224,7 @@ public class PostService {
     }
 
     @Transactional
-    public ResultResponse<PostError> editPost(int id, NewPostRequest request, Errors errors) {
+    public ResultResponse<PostError> editPost(Integer id, NewPostRequest request, Errors errors) {
         ResultResponse<PostError> response = new ResultResponse<>();
 
         //check request
@@ -247,7 +242,9 @@ public class PostService {
 
         //update post
         long currentTime = Instant.now().getEpochSecond();
-        Post post = repository.findById(id);
+        Post post = repository.findById(id).orElseThrow(
+                ()-> new WrongPageException("page not found")
+        );
 
         //delete previous tags
         List<Tag> prevTags = post.getTags();
@@ -295,7 +292,9 @@ public class PostService {
 
     public boolean moderatePost(ModerateRequest request) {
         try {
-            Post post = repository.findById(request.getPostId());
+            Post post = repository.findById(request.getPostId()).orElseThrow(
+                    () -> new WrongPageException("page not found")
+            );
             ModerationStatus decision = (request.getDecision().equals("accept")) ?
                     ModerationStatus.ACCEPTED : ModerationStatus.DECLINED;
 

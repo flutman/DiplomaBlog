@@ -26,6 +26,9 @@ server.port: ${PORT:8080}
 
 captcha:
   updateTime: 1
+  image:
+    width: 100
+    height: 35
 
 jwt:
   token:

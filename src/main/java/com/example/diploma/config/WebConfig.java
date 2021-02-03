@@ -3,6 +3,7 @@ package com.example.diploma.config;
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.enums.PostModerationStatus;
 import com.example.diploma.enums.StatisticsType;
+import com.example.diploma.enums.VoteType;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -20,11 +21,12 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addConverter(new PostModerationStatus.StringToEnumConverter());
         registry.addConverter(new ModerationStatus.StringToEnumConverter());
         registry.addConverter(new StatisticsType.StringToEnumConverter());
+        registry.addConverter(new VoteType.StringToEnumConverter());
     }
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 registry.addResourceHandler("/upload/**","/img/upload/**","/static/img/upload/**")
-                .addResourceLocations("file:D:/javaProg/diploma/Diploma/upload/","file:D:/javaProg/diploma/Diploma/");
+                .addResourceLocations("file:upload/");
     }
 }

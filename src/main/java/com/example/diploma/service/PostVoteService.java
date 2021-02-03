@@ -1,5 +1,7 @@
 package com.example.diploma.service;
 
+import com.example.diploma.enums.VoteType;
+import com.example.diploma.exception.WrongPageException;
 import com.example.diploma.model.Post;
 import com.example.diploma.model.PostVote;
 import com.example.diploma.model.User;
@@ -20,15 +22,18 @@ public class PostVoteService {
     private final UserService userService;
     private final PostRepository postRepository;
 
-    public boolean likePost(int postId) {
+    public boolean vote(VoteType vote, int postId) {
         User currentUser = userService.getCurrentUser();
-        Post currentPost = postRepository.findById(postId);
+        Post currentPost = postRepository.findById(postId).orElseThrow(
+                () -> new WrongPageException("page not found")
+        );
         Optional<PostVote> pv = repository.findPostVoteByPostAndUser(currentPost, currentUser);
+        int voteRequested = vote.equals(VoteType.LIKE) ? 1 : -1;
 
         int userVote = pv.map(PostVote::getValue).orElse(0);
 
         //if already liked
-        if (userVote > 0) {
+        if (userVote == voteRequested) {
             return false;
         }
 
@@ -36,29 +41,7 @@ public class PostVoteService {
         postVote.setPost(currentPost);
         postVote.setTime(LocalDateTime.now());
         postVote.setUser(currentUser);
-        postVote.setValue(1);
-        repository.save(postVote);
-
-        return true;
-    }
-
-    public boolean dislikePost(int postId) {
-        User currentUser = userService.getCurrentUser();
-        Post currentPost = postRepository.findById(postId);
-        Optional<PostVote> pv = repository.findPostVoteByPostAndUser(currentPost, currentUser);
-
-        int userVote = pv.map(PostVote::getValue).orElse(0);
-
-        //if already liked
-        if (userVote < 0) {
-            return false;
-        }
-
-        PostVote postVote = pv.orElse(new PostVote());
-        postVote.setPost(currentPost);
-        postVote.setTime(LocalDateTime.now());
-        postVote.setUser(currentUser);
-        postVote.setValue(-1);
+        postVote.setValue(voteRequested);
         repository.save(postVote);
 
         return true;

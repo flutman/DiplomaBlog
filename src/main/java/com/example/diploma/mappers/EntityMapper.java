@@ -22,7 +22,8 @@ public class EntityMapper {
         plainPostDto.setViewCount(post.getViewCount());
         plainPostDto.setTimestamp(post.getTime().getEpochSecond());
         plainPostDto.setUser(userToUserDto(post.getUser()));
-        String announce = post.getText().length() > 150 ? post.getText().substring(0, 150) + "..." : post.getText();
+        String announce = post.getText().replaceAll("<.*?>","");
+        announce = announce.length() > 150 ? announce.substring(0, 150) + "..." : announce;
         plainPostDto.setAnnounce(announce);
         plainPostDto.setDislikeCount(post.getPostVotes().stream()
                 .filter(item -> item.getValue() < 0)

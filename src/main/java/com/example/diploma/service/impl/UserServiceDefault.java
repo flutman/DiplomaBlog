@@ -176,7 +176,7 @@ public class UserServiceDefault implements UserService {
     }
 
     private int moderationPostCount(boolean isModerator) {
-        if (isModerator) return 0;
+        if (!isModerator) return 0;
 
         return (int) postRepository
                 .findPostForModeration(ModerationStatus.NEW, PageRequest.of(0, 10)).getTotalElements();
@@ -324,7 +324,7 @@ public class UserServiceDefault implements UserService {
             return response;
         }
 
-        String pathToPhoto = storageService.handleFileUploadAvatar(photo);
+        String pathToPhoto = "/" + storageService.handleFileUploadAvatar(photo);
         currUser.setPhoto(pathToPhoto);
 
         Optional.ofNullable(name).ifPresent(currUser::setName);

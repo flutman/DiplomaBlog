@@ -8,10 +8,7 @@ import com.example.diploma.data.response.TagResponse;
 import com.example.diploma.data.response.base.ResultResponse;
 import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.enums.StatisticsType;
-import com.example.diploma.service.GlobalSettingService;
-import com.example.diploma.service.PostService;
-import com.example.diploma.service.StorageService;
-import com.example.diploma.service.TagService;
+import com.example.diploma.service.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,11 +26,12 @@ public class ApiGeneralController {
     private final TagService tagService;
     private final PostService postService;
     private final GlobalSettingService globalSettingService;
+    private final StatisticService statisticService;
     private final StorageService storageService;
 
     @GetMapping("/tag")
     public ResponseEntity<TagResponse> showTags(@RequestParam(required = false) String query) {
-        return new ResponseEntity<>(tagService.getAllTags(), HttpStatus.OK);
+        return new ResponseEntity<>(tagService.getTags(), HttpStatus.OK);
     }
 
     @GetMapping("/calendar")
@@ -43,7 +41,7 @@ public class ApiGeneralController {
 
     @GetMapping("/statistics/{type}")
     public ResponseEntity<StatisticResponse> showStatistics(@PathVariable StatisticsType type) {
-        return globalSettingService.getStatistics(type);
+        return statisticService.getStatistics(type);
     }
 
     @PutMapping("/settings")
@@ -55,7 +53,7 @@ public class ApiGeneralController {
     @GetMapping("/settings")
     public ResponseEntity<GlobalSettingResponse> getGlobalSettings() {
         GlobalSettingResponse response = new GlobalSettingResponse();
-        return globalSettingService.getAllSettings2();
+        return globalSettingService.getAllSettings();
     }
 
 
