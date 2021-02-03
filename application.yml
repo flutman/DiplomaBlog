@@ -30,8 +30,5 @@ captcha:
     width: 100
     height: 35
 
-jwt:
-  token:
-    secret: secretkey
-    expired: 86400000
-
+app:
+  upload-path: upload/

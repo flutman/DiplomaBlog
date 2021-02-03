@@ -1,6 +1,5 @@
 package com.example.diploma.controller;
 
-import com.example.diploma.data.response.GlobalSettingResponse;
 import com.example.diploma.data.response.InitResponse;
 import com.example.diploma.service.GlobalSettingService;
 import lombok.AllArgsConstructor;

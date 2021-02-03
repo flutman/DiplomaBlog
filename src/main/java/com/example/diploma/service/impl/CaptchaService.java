@@ -1,9 +1,10 @@
-package com.example.diploma.service;
+package com.example.diploma.service.impl;
 
 import com.example.diploma.config.AppConfig;
 import com.example.diploma.data.response.CaptchaResponse;
 import com.example.diploma.model.CaptchaCode;
 import com.example.diploma.repository.CaptchaCodeRepository;
+import com.example.diploma.service.CaptchaServiceDefault;
 import com.github.cage.Cage;
 import com.github.cage.GCage;
 import org.springframework.http.HttpStatus;
@@ -22,7 +23,7 @@ import java.util.Random;
 import java.util.UUID;
 
 @Service
-public class CaptchaService {
+public class CaptchaService implements CaptchaServiceDefault {
 
     private final AppConfig appConfig;
     private final CaptchaCodeRepository captchaCodeRepository;
@@ -41,6 +42,7 @@ public class CaptchaService {
         captchaWight = appConfig.getCaptchaWidth();
     }
 
+    @Override
     public CaptchaCode getCaptcha() {
         deleteOutdatedCaptchas(appConfig.getCaptchaHoursToBeUpdated());
 
@@ -67,6 +69,7 @@ public class CaptchaService {
 
     }
 
+    @Override
     public ResponseEntity<CaptchaResponse> getCaptchaResponse() {
         CaptchaResponse response = new CaptchaResponse();
 

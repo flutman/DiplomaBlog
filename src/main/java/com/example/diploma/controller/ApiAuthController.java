@@ -10,7 +10,7 @@ import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.base.ResultResponse;
 import com.example.diploma.data.response.type.PasswordError;
 import com.example.diploma.data.response.type.PostError;
-import com.example.diploma.service.CaptchaService;
+import com.example.diploma.service.impl.CaptchaService;
 import com.example.diploma.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
