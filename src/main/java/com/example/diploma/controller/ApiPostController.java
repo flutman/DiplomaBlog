@@ -119,19 +119,10 @@ public class ApiPostController {
     }
 
     @PostMapping("/{vote}")
-    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<ResultResponse<?>> vote(@PathVariable VoteType vote, @RequestBody Map<String, Integer> body) {
         boolean result = postVoteService.vote(vote, body.getOrDefault("post_id", 0));
         ResultResponse<?> response = new ResultResponse<>(result);
         return ResponseEntity.ok(response);
     }
-
-//    @PostMapping("/dislike")
-//    @PreAuthorize("hasAuthority('user:write')")
-//    public ResponseEntity<ResultResponse<?>> dislikeVote(@RequestBody Map<String, Integer> body) {
-//        boolean result = postVoteService.dislikePost(body.getOrDefault("post_id", 0));
-//        ResultResponse<?> response = new ResultResponse<>(result);
-//        return ResponseEntity.ok(response);
-//    }
 
 }

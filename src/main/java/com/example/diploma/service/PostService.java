@@ -9,6 +9,8 @@ import com.example.diploma.data.response.type.PostError;
 import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.enums.PostModerationStatus;
+import com.example.diploma.model.Post;
+import com.example.diploma.model.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.Errors;
@@ -37,4 +39,8 @@ public interface PostService {
     ResultResponse<PostError> editPost(Integer id, NewPostRequest request, Errors errors);
 
     boolean moderatePost(ModerateRequest request);
+
+    User checkCurrentUser();
+
+    Post findPostById(Integer id);
 }

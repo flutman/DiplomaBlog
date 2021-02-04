@@ -15,7 +15,7 @@ spring.servlet.multipart:
 spring.mail:
   host: smtp.gmail.com
   username: defdevblog@gmail.com
-  password: test123test
+  password: ${APP_MAIL_PASS}
   port: 587
   smtp.auth: true
   protocol: smtp

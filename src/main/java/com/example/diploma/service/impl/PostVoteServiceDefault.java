@@ -7,6 +7,7 @@ import com.example.diploma.model.PostVote;
 import com.example.diploma.model.User;
 import com.example.diploma.repository.PostRepository;
 import com.example.diploma.repository.PostVoteRepository;
+import com.example.diploma.service.PostService;
 import com.example.diploma.service.PostVoteService;
 import com.example.diploma.service.UserService;
 import lombok.AllArgsConstructor;
@@ -20,14 +21,16 @@ import java.util.Optional;
 public class PostVoteServiceDefault implements PostVoteService {
 
     private final PostVoteRepository repository;
-    private final UserService userService;
-    private final PostRepository postRepository;
+    private final PostService postService;
 
     @Override public boolean vote(VoteType vote, int postId) {
-        User currentUser = userService.getCurrentUser();
-        Post currentPost = postRepository.findById(postId).orElseThrow(
-                () -> new WrongPageException("page not found")
-        );
+        User currentUser = postService.checkCurrentUser();
+        Post currentPost = postService.findPostById(postId);
+
+        if (currentUser.getId() == 0) {
+            return false;
+        }
+
         Optional<PostVote> pv = repository.findPostVoteByPostAndUser(currentPost, currentUser);
         int voteRequested = vote.equals(VoteType.LIKE) ? 1 : -1;
 

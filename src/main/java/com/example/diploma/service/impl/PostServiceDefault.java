@@ -27,7 +27,6 @@ import com.example.diploma.service.PostService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -129,10 +128,14 @@ public class PostServiceDefault implements PostService {
     }
 
     private void incViewCount(Post post) {
-        if (!post.getUser().equals(getCurrentUser())) {
-            repository.save(post.toBuilder()
-                    .viewCount(post.getViewCount() + 1).build());
+        User currUser = checkCurrentUser();
+        if (currUser.getId() != 0) {
+            if (post.getUser().equals(currUser)){
+                return;
+            }
         }
+        repository.save(post.toBuilder()
+                .viewCount(post.getViewCount() + 1).build());
     }
 
     @Override
@@ -231,7 +234,7 @@ public class PostServiceDefault implements PostService {
         Post post = Post.builder()
                 .isActive(request.getActive() == 1)
                 .moderationStatus(moderationStatus)
-                .user(getCurrentUser())
+                .user(checkCurrentUser())
                 .tags(tags)
                 .time(Instant.ofEpochSecond(Math.max(currentTime, request.getTimestamp())))
                 .title(request.getTitle())
@@ -270,14 +273,14 @@ public class PostServiceDefault implements PostService {
         List<Tag> prevTags = post.getTags();
         tagRepository.deleteAll(prevTags);
 
-        ModerationStatus postStatus = (getCurrentUser().getIsModerator() == 1) ?
+        ModerationStatus postStatus = (checkCurrentUser().getIsModerator() == 1) ?
                 post.getModerationStatus() :
                 ModerationStatus.NEW;
 
         Post editedPost = post.toBuilder()
                 .isActive(request.getActive() == 1)
                 .moderationStatus(postStatus)
-                .user(getCurrentUser())
+                .user(checkCurrentUser())
                 .tags(tags)
                 .time(Instant.ofEpochSecond(Math.max(currentTime, request.getTimestamp())))
                 .title(request.getTitle())
@@ -294,8 +297,12 @@ public class PostServiceDefault implements PostService {
         return (tag != null) ? tag : tagRepository.save(new Tag(name));
     }
 
-    private User getCurrentUser() {
-        String email = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
+    public User checkCurrentUser() {
+        Object currUser = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(currUser instanceof SecurityUser)) {
+            return new User();
+        }
+        String email = ((SecurityUser) currUser).getUsername();
         return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("user not found"));
     }
 
@@ -321,7 +328,7 @@ public class PostServiceDefault implements PostService {
 
             repository.save(post.toBuilder()
                     .moderationStatus(decision)
-                    .moderator(getCurrentUser())
+                    .moderator(checkCurrentUser())
                     .build()
             );
         } catch (Exception exception) {
@@ -330,5 +337,10 @@ public class PostServiceDefault implements PostService {
         return true;
     }
 
-
+    @Override
+    public Post findPostById(Integer id) {
+        return repository.findById(id).orElseThrow(
+                ()-> new WrongPageException("post not found")
+        );
+    }
 }
