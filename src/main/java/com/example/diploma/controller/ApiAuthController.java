@@ -8,10 +8,10 @@ import com.example.diploma.data.response.CaptchaResponse;
 import com.example.diploma.data.response.LoginResponse;
 import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.base.ResultResponse;
+import com.example.diploma.data.response.type.NewPostResponse;
 import com.example.diploma.data.response.type.PasswordError;
-import com.example.diploma.data.response.type.PostError;
-import com.example.diploma.service.impl.CaptchaService;
 import com.example.diploma.service.UserService;
+import com.example.diploma.service.impl.CaptchaService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +41,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest){
+    public ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
         RegisterResponse response = userService.register(registerRequest);
         return ResponseEntity.ok(response);
     }
@@ -61,8 +61,8 @@ public class ApiAuthController {
     }
 
     @PostMapping("/restore")
-    public ResponseEntity<ResultResponse<PostError>> restorePassword(@RequestBody RestorePasswordRequest request) {
-        ResultResponse<PostError> response = userService.restorePassword(request.getEmail());
+    public ResponseEntity<ResultResponse<NewPostResponse>> restorePassword(@RequestBody RestorePasswordRequest request) {
+        ResultResponse<NewPostResponse> response = userService.restorePassword(request.getEmail());
         return ResponseEntity.ok(response);
     }
 

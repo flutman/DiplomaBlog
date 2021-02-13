@@ -5,7 +5,7 @@ import com.example.diploma.data.request.NewPostRequest;
 import com.example.diploma.data.response.PostResponse;
 import com.example.diploma.data.response.PostWithCommentsResponse;
 import com.example.diploma.data.response.base.ResultResponse;
-import com.example.diploma.data.response.type.PostError;
+import com.example.diploma.data.response.type.NewPostResponse;
 import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.dto.CommentDto;
 import com.example.diploma.dto.PlainPostDto;
@@ -100,12 +100,25 @@ public class PostServiceDefault implements PostService {
                 () -> new WrongPageException("page not found")
         );
 
-        List<CommentDto> comments = post.getComments().stream().map(CommentDto::new).collect(Collectors.toList());
-        List<String> tags = post.getTags().stream().map(Tag::getName).collect(Collectors.toList());
+        List<CommentDto> comments = getPostComment(post);
+        List<String> tags = getPostTags(post);
 
-        incViewCount(post);
+        increaseViewCount(post);
 
         return new PostWithCommentsResponse(post, comments, tags);
+    }
+
+    private List<String> getPostTags(Post post) {
+        return post.getTags().stream()
+                .map(Tag::getName)
+                .collect(Collectors.toList());
+    }
+
+    private List<CommentDto> getPostComment(Post post) {
+        return post.getComments()
+                .stream()
+                .map(CommentDto::new)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -127,10 +140,10 @@ public class PostServiceDefault implements PostService {
         return calendarDto;
     }
 
-    private void incViewCount(Post post) {
+    private void increaseViewCount(Post post) {
         User currUser = checkCurrentUser();
         if (currUser.getId() != 0) {
-            if (post.getUser().equals(currUser)){
+            if (post.getUser().equals(currUser)) {
                 return;
             }
         }
@@ -204,8 +217,8 @@ public class PostServiceDefault implements PostService {
 
     @Override
     @Transactional
-    public ResultResponse<PostError> addNewPost(NewPostRequest request, Errors errors) {
-        ResultResponse<PostError> response = new ResultResponse<>();
+    public ResultResponse<NewPostResponse> addNewPost(NewPostRequest request, Errors errors) {
+        ResultResponse<NewPostResponse> response = new ResultResponse<>();
         //check request
         if (errors.hasErrors()) {
             response.setResult(false);
@@ -213,11 +226,7 @@ public class PostServiceDefault implements PostService {
             return response;
         }
 
-        //create tags
-        List<Tag> tags = new ArrayList<>();
-        if (request.getTags() != null) {
-            request.getTags().forEach(tag -> tags.add(takeTag(tag)));
-        }
+        List<Tag> tags = newPostTags(request);
 
         //create post
         long currentTime = Instant.now().getEpochSecond();
@@ -245,10 +254,18 @@ public class PostServiceDefault implements PostService {
         return response;
     }
 
+    private List<Tag> newPostTags(NewPostRequest request) {
+        List<Tag> tags = new ArrayList<>();
+        if (request.getTags() != null) {
+            request.getTags().forEach(tag -> tags.add(takeTag(tag)));
+        }
+        return tags;
+    }
+
     @Override
     @Transactional
-    public ResultResponse<PostError> editPost(Integer id, NewPostRequest request, Errors errors) {
-        ResultResponse<PostError> response = new ResultResponse<>();
+    public ResultResponse<NewPostResponse> editPost(Integer id, NewPostRequest request, Errors errors) {
+        ResultResponse<NewPostResponse> response = new ResultResponse<>();
 
         //check request
         if (errors.hasErrors()) {
@@ -306,8 +323,8 @@ public class PostServiceDefault implements PostService {
         return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("user not found"));
     }
 
-    private PostError getErrors(Errors errors) {
-        PostError postErrors = new PostError();
+    private NewPostResponse getErrors(Errors errors) {
+        NewPostResponse postErrors = new NewPostResponse();
         if (errors.hasFieldErrors("title")) {
             postErrors.setTitle(errors.getFieldError("title").getDefaultMessage());
         }
@@ -340,7 +357,7 @@ public class PostServiceDefault implements PostService {
     @Override
     public Post findPostById(Integer id) {
         return repository.findById(id).orElseThrow(
-                ()-> new WrongPageException("post not found")
+                () -> new WrongPageException("post not found")
         );
     }
 }

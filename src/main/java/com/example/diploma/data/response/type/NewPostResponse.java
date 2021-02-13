@@ -3,7 +3,7 @@ package com.example.diploma.data.response.type;
 import lombok.Data;
 
 @Data
-public class PostError {
+public class NewPostResponse {
     private String title;
     private String text;
 }

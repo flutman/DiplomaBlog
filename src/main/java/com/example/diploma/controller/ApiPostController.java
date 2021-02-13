@@ -3,7 +3,7 @@ package com.example.diploma.controller;
 import com.example.diploma.data.request.NewPostRequest;
 import com.example.diploma.data.response.PostResponse;
 import com.example.diploma.data.response.base.ResultResponse;
-import com.example.diploma.data.response.type.PostError;
+import com.example.diploma.data.response.type.NewPostResponse;
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.enums.PostModerationStatus;
 import com.example.diploma.enums.VoteType;
@@ -47,22 +47,22 @@ public class ApiPostController {
 
     @PostMapping("")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<ResultResponse<PostError>> addNewPost(
+    public ResponseEntity<ResultResponse<NewPostResponse>> addNewPost(
             @RequestBody @Valid NewPostRequest request,
             Errors errors
     ) {
-        ResultResponse<PostError> response = postService.addNewPost(request, errors);
+        ResultResponse<NewPostResponse> response = postService.addNewPost(request, errors);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('user:write')")
-    public ResponseEntity<ResultResponse<PostError>> editPost(
+    public ResponseEntity<ResultResponse<NewPostResponse>> editPost(
             @PathVariable int id,
             @RequestBody @Valid NewPostRequest request,
             Errors errors
     ) {
-        ResultResponse<PostError> response = postService.editPost(id, request, errors);
+        ResultResponse<NewPostResponse> response = postService.editPost(id, request, errors);
         return ResponseEntity.ok(response);
     }
 

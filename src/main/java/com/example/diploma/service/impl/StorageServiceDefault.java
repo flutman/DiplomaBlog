@@ -19,7 +19,8 @@ import java.util.Random;
 @Service
 public class StorageServiceDefault implements StorageService {
 
-    @Override public String handleFileUpload(MultipartFile file) {
+    @Override
+    public String handleFileUpload(MultipartFile file) {
         String response = "";
         if (!file.isEmpty()) {
             response = fileUpload(file);
@@ -27,7 +28,8 @@ public class StorageServiceDefault implements StorageService {
         return response;
     }
 
-    @Override public String handleFileUploadAvatar(MultipartFile file) {
+    @Override
+    public String handleFileUploadAvatar(MultipartFile file) {
         String response = "";
         if (!file.isEmpty()) {
             response = fileUploadWithSize(file, 35, 35);
@@ -71,7 +73,7 @@ public class StorageServiceDefault implements StorageService {
             try {
                 Files.createDirectories(path);
             } catch (IOException ex) {
-                throw new BadRequestException();
+                throw new UploadException();
             }
         }
 
@@ -87,7 +89,8 @@ public class StorageServiceDefault implements StorageService {
         return "/" + imagePath;
     }
 
-    @Override public byte[] getImage(Path path) {
+    @Override
+    public byte[] getImage(Path path) {
         try {
             return Files.readAllBytes(path);
         } catch (IOException e) {

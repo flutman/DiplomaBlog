@@ -1,5 +1,6 @@
 package com.example.diploma.service.impl;
 
+import com.example.diploma.config.AppConfig;
 import com.example.diploma.data.request.AuthenticationRequest;
 import com.example.diploma.data.request.PasswordChangeRequest;
 import com.example.diploma.data.request.ProfileRequest;
@@ -8,8 +9,8 @@ import com.example.diploma.data.response.LoginResponse;
 import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.UserResponse;
 import com.example.diploma.data.response.base.ResultResponse;
+import com.example.diploma.data.response.type.NewPostResponse;
 import com.example.diploma.data.response.type.PasswordError;
-import com.example.diploma.data.response.type.PostError;
 import com.example.diploma.data.response.type.RegisterErrorResponse;
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.exception.ApiError;
@@ -47,6 +48,8 @@ import java.util.*;
 @AllArgsConstructor
 public class UserServiceDefault implements UserService {
 
+
+    private final AppConfig appConfig;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
@@ -113,17 +116,29 @@ public class UserServiceDefault implements UserService {
 
     @Override
     public LoginResponse login(AuthenticationRequest authenticationRequest) {
+        LoginResponse response = new LoginResponse();
         String username = authenticationRequest.getEmail();
 
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(username, authenticationRequest.getPassword())
-        );
-        SecurityContextHolder.getContext().setAuthentication(auth);
+        try {
+            Authentication auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, authenticationRequest.getPassword())
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
 
-        SecurityUser securityUser = (SecurityUser) auth.getPrincipal();
-        User currentUser = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("username not found"));
-        LoginResponse response = new LoginResponse();
+            SecurityUser securityUser = (SecurityUser) auth.getPrincipal();
+
+        } catch (Exception ex) {
+            return response;
+        }
+
+        Optional<User> optionalUser = userRepository.findByEmail(username);
+
+        User currentUser;
+        if (optionalUser.isPresent()) {
+            currentUser = optionalUser.get();
+        } else {
+            return response;
+        }
 
         boolean isModerator = currentUser.getIsModerator() == 1;
 
@@ -147,14 +162,17 @@ public class UserServiceDefault implements UserService {
     @Override
     public LoginResponse checkUser(Principal principal) {
         LoginResponse response = new LoginResponse();
+        User user;
+
         if (principal == null) {
             return response;
         }
 
-        User user = userRepository.findByEmail(principal.getName())
-                .orElse(new User());
+        Optional<User> optionalUser = userRepository.findByEmail(principal.getName());
 
-        if (user == null) {
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
+        } else {
             return response;
         }
 
@@ -183,11 +201,18 @@ public class UserServiceDefault implements UserService {
     }
 
     @Override
-    public ResultResponse<PostError> restorePassword(String email) {
+    public ResultResponse<NewPostResponse> restorePassword(String email) {
+        ResultResponse<NewPostResponse> result = new ResultResponse<>();
+        User user;
         //check User exist
-        User user = userRepository.findByEmail(email).orElseThrow(
-                () -> new UsernameNotFoundException("user not found")
-        );
+
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+        if (optionalUser.isEmpty()) {
+            result.setResult(false);
+            return result;
+        } else {
+            user = optionalUser.get();
+        }
 
         //sendEmail
         String activationCode = UUID.randomUUID().toString();
@@ -388,10 +413,11 @@ public class UserServiceDefault implements UserService {
     }
 
     private String generateRestoreMessage(String userName, String activationCode) {
+//        String hostname = "localhost:8080";
         return String.format(
                 "Привет, %s! \n Добро пожаловать на сайт DevPub. " +
-                        "Для подтверждения перейди по ссылке: http://localhost:8080/login/change-password/%s",
-                userName, activationCode
+                        "Для подтверждения перейди по ссылке: http://%s/login/change-password/%s",
+                userName, appConfig.getHostname(), activationCode
         );
     }
 

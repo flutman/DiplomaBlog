@@ -10,6 +10,7 @@ import com.example.diploma.service.TagService;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -17,12 +18,12 @@ public class TagServiceDefault implements TagService {
     private final TagRepository repository;
     private final PostRepository postRepository;
 
-    public TagServiceDefault(TagRepository repository, PostRepository postRepository){
+    public TagServiceDefault(TagRepository repository, PostRepository postRepository) {
         this.repository = repository;
         this.postRepository = postRepository;
     }
 
-    public TagResponse getTags(){
+    public TagResponse getTags() {
         List<Tag> tags = new ArrayList<>(repository.findTagOfPublishedPosts());
         EntityMapper entityMapper = new EntityMapper();
 
@@ -35,9 +36,23 @@ public class TagServiceDefault implements TagService {
 
         TagResponse response = new TagResponse();
 
-        response.setTags(tagsList);
+        response.setTags(normalizeTags(tagsList));
 
         return response;
+    }
+
+    private List<TagDto> normalizeTags(List<TagDto> tags) {
+        tags.sort(Comparator.reverseOrder());
+
+        double k = 1 / tags.get(0).getWeight();
+        tags.stream().skip(1)
+                .forEach(tagDto -> {
+                    double newWeight = tagDto.getWeight() * k;
+                    tagDto.setWeight(newWeight);
+                });
+        tags.get(0).setWeight(1.0);
+
+        return tags;
     }
 
 }

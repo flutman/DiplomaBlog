@@ -5,7 +5,7 @@ import com.example.diploma.data.request.NewPostRequest;
 import com.example.diploma.data.response.PostResponse;
 import com.example.diploma.data.response.PostWithCommentsResponse;
 import com.example.diploma.data.response.base.ResultResponse;
-import com.example.diploma.data.response.type.PostError;
+import com.example.diploma.data.response.type.NewPostResponse;
 import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.enums.PostModerationStatus;
@@ -33,10 +33,10 @@ public interface PostService {
     PostResponse findMyPosts(PostModerationStatus status, Pageable pageable);
 
     @Transactional
-    ResultResponse<PostError> addNewPost(NewPostRequest request, Errors errors);
+    ResultResponse<NewPostResponse> addNewPost(NewPostRequest request, Errors errors);
 
     @Transactional
-    ResultResponse<PostError> editPost(Integer id, NewPostRequest request, Errors errors);
+    ResultResponse<NewPostResponse> editPost(Integer id, NewPostRequest request, Errors errors);
 
     boolean moderatePost(ModerateRequest request);
 

@@ -8,6 +8,7 @@ import com.example.diploma.data.response.TagResponse;
 import com.example.diploma.data.response.base.ResultResponse;
 import com.example.diploma.dto.CalendarDto;
 import com.example.diploma.enums.StatisticsType;
+import com.example.diploma.exception.UploadException;
 import com.example.diploma.service.*;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -60,6 +61,10 @@ public class ApiGeneralController {
     @PostMapping("/image")
     @PreAuthorize("hasAuthority('user:write')")
     public String handleFileUpload(@RequestParam MultipartFile image) {
+        if (image.isEmpty()) {
+            throw new UploadException();
+        }
+
         return storageService.handleFileUpload(image);
     }
 
@@ -71,13 +76,8 @@ public class ApiGeneralController {
                     @PathVariable String fileName) {
         String route;
 
-        if (path1.equals("default")) {
-            route = new File("").getAbsolutePath()
-                    .concat("/upload/9AO/GK2/XK7/NN1.jpg");
-        } else {
-            route = new File("").getAbsolutePath()
-                    .concat("/upload/" + path1 + "/" + path2 + "/" + path3 + "/" + fileName);
-        }
+        route = new File("").getAbsolutePath()
+                .concat("/upload/" + path1 + "/" + path2 + "/" + path3 + "/" + fileName);
 
         return storageService.getImage(Path.of(route));
     }

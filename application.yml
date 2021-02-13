@@ -32,3 +32,4 @@ captcha:
 
 app:
   upload-path: upload/
+  hostname: ${HOSTNAME}
