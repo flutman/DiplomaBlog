@@ -416,7 +416,7 @@ public class UserServiceDefault implements UserService {
 //        String hostname = "localhost:8080";
         return String.format(
                 "Привет, %s! \n Добро пожаловать на сайт DevPub. " +
-                        "Для подтверждения перейди по ссылке: http://%s/login/change-password/%s",
+                        "Для подтверждения перейди по ссылке: %s/login/change-password/%s",
                 userName, appConfig.getHostname(), activationCode
         );
     }

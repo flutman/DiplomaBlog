@@ -18,7 +18,7 @@ public class AppConfig {
     private int CAPTCHA_WIDTH;
     @Value("${captcha.image.height:35}")
     private int CAPTCHA_HEIGHT;
-    @Value("${app.hostname:localhost:8080}")
+    @Value("${app.hostname:http://localhost:8080}")
     private String hostname;
 
     public void addSession(String sessionId, Integer userId) {
