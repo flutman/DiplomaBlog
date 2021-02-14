@@ -7,8 +7,7 @@ import com.example.diploma.data.request.RegisterRequest;
 import com.example.diploma.data.response.LoginResponse;
 import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.base.ResultResponse;
-import com.example.diploma.data.response.type.PasswordError;
-import com.example.diploma.data.response.type.NewPostResponse;
+import com.example.diploma.data.response.type.PasswordChangeResponse;
 import com.example.diploma.model.User;
 import com.example.diploma.model.enums.Permission;
 import org.springframework.validation.Errors;
@@ -26,9 +25,9 @@ public interface UserService {
 
     LoginResponse checkUser(Principal principal);
 
-    ResultResponse<NewPostResponse> restorePassword(String email);
+    ResultResponse<?> restorePassword(String email);
 
-    ResultResponse<PasswordError> changePassword(PasswordChangeRequest request);
+    ResultResponse<PasswordChangeResponse> changePassword(PasswordChangeRequest request);
 
     User getCurrentUser();
 

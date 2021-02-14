@@ -9,8 +9,7 @@ import com.example.diploma.data.response.LoginResponse;
 import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.UserResponse;
 import com.example.diploma.data.response.base.ResultResponse;
-import com.example.diploma.data.response.type.NewPostResponse;
-import com.example.diploma.data.response.type.PasswordError;
+import com.example.diploma.data.response.type.PasswordChangeResponse;
 import com.example.diploma.data.response.type.RegisterErrorResponse;
 import com.example.diploma.enums.ModerationStatus;
 import com.example.diploma.exception.ApiError;
@@ -48,7 +47,6 @@ import java.util.*;
 @AllArgsConstructor
 public class UserServiceDefault implements UserService {
 
-
     private final AppConfig appConfig;
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
@@ -61,6 +59,7 @@ public class UserServiceDefault implements UserService {
     @Override
     public RegisterResponse register(RegisterRequest registerRequest) {
         RegisterResponse response = checkErrors(registerRequest);
+
         if (response.isResult()) {
             User newUser = registerNewUser(registerRequest);
             log.info("IN register - user: {} successfully register", newUser.getName());
@@ -107,6 +106,7 @@ public class UserServiceDefault implements UserService {
     private boolean checkCaptcha(String captcha, String captchaCodeSecret) {
         String code = captchaCodeRepository.findBySecretCode(captchaCodeSecret)
                 .map(CaptchaCode::getCode).orElse("");
+
         return captcha.equals(code);
     }
 
@@ -121,7 +121,10 @@ public class UserServiceDefault implements UserService {
 
         try {
             Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, authenticationRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(
+                            username,
+                            authenticationRequest.getPassword()
+                    )
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
 
@@ -197,15 +200,16 @@ public class UserServiceDefault implements UserService {
         if (!isModerator) return 0;
 
         return (int) postRepository
-                .findPostForModeration(ModerationStatus.NEW, PageRequest.of(0, 10)).getTotalElements();
+                .findPostForModeration(ModerationStatus.NEW, PageRequest.of(0, 10))
+                .getTotalElements();
     }
 
     @Override
-    public ResultResponse<NewPostResponse> restorePassword(String email) {
-        ResultResponse<NewPostResponse> result = new ResultResponse<>();
+    public ResultResponse<?> restorePassword(String email) {
+        ResultResponse<String> result = new ResultResponse<>();
         User user;
-        //check User exist
 
+        //check User exist
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
             result.setResult(false);
@@ -227,10 +231,10 @@ public class UserServiceDefault implements UserService {
     }
 
     @Override
-    public ResultResponse<PasswordError> changePassword(PasswordChangeRequest request) {
-        //check request
-        ResultResponse<PasswordError> response = new ResultResponse<>();
-        PasswordError errors = new PasswordError();
+    public ResultResponse<PasswordChangeResponse> changePassword(PasswordChangeRequest request) {
+        ResultResponse<PasswordChangeResponse> response = new ResultResponse<>();
+        PasswordChangeResponse errors = new PasswordChangeResponse();
+
         if (request.getPassword().length() < 6) {
             errors.addError("password", "Пароль короче 6-ти символов");
             response.setResult(false);
@@ -243,7 +247,8 @@ public class UserServiceDefault implements UserService {
                     "<a href=\n" +
                     "\\\"/auth/restore\\\">Запросить ссылку снова</a>");
         }
-        CaptchaCode code = captchaCodeRepository.findBySecretCode(request.getCaptchaSecret()).orElse(new CaptchaCode());
+        CaptchaCode code = captchaCodeRepository.findBySecretCode(request.getCaptchaSecret())
+                .orElse(new CaptchaCode());
         if (!code.getCode().equals(request.getCaptcha())) {
             errors.addError("captcha", "Код с картинки введен неверно");
         }
@@ -269,9 +274,12 @@ public class UserServiceDefault implements UserService {
         ResultResponse<Map<String, String>> response = new ResultResponse<>();
         boolean isChangedEmail = false;
 
-        String currentEmail = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+        String currentEmail = ((SecurityUser) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal())
                 .getUsername();
-        User currUser = userRepository.findByEmail(currentEmail).orElseThrow(() -> new BadRequestException(new ApiError()));
+        User currUser = userRepository.findByEmail(currentEmail).orElseThrow(
+                () -> new BadRequestException(new ApiError())
+        );
 
         Map<String, String> errors = new HashMap<>();
         if (formErrors.hasErrors()) {
@@ -303,7 +311,8 @@ public class UserServiceDefault implements UserService {
             currUser.setEmail(request.getEmail());
         }
 
-        Optional.ofNullable(request.getPassword()).ifPresent(p -> currUser.setPassword(passwordEncoder.encode(p)));
+        Optional.ofNullable(request.getPassword())
+                .ifPresent(p -> currUser.setPassword(passwordEncoder.encode(p)));
 
         if (request.getRemovePhoto() == 1) {
             currUser.setPhoto("");
@@ -328,17 +337,21 @@ public class UserServiceDefault implements UserService {
     }
 
     @Override
-    public ResultResponse<Map<String, String>> updateProfileWithPhoto(MultipartFile photo,
-                                                                      Boolean removePhoto,
-                                                                      String name,
-                                                                      String email,
-                                                                      String password) {
+    public ResultResponse<Map<String, String>> updateProfileWithPhoto(
+            MultipartFile photo,
+            Boolean removePhoto,
+            String name,
+            String email,
+            String password
+    ) {
         ResultResponse<Map<String, String>> response = new ResultResponse<>();
         boolean isChangedEmail = false;
 
-        String currentEmail = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal())
+        String currentEmail = ((SecurityUser) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal())
                 .getUsername();
-        User currUser = userRepository.findByEmail(currentEmail).orElseThrow(() -> new BadRequestException(new ApiError()));
+        User currUser = userRepository.findByEmail(currentEmail).orElseThrow(
+                () -> new BadRequestException(new ApiError()));
 
         Map<String, String> errors = checkEditProfileRequest(name, email, password);
         errors.putAll(checkEditProfilePhoto(photo));
@@ -413,7 +426,6 @@ public class UserServiceDefault implements UserService {
     }
 
     private String generateRestoreMessage(String userName, String activationCode) {
-//        String hostname = "localhost:8080";
         return String.format(
                 "Привет, %s! \n Добро пожаловать на сайт DevPub. " +
                         "Для подтверждения перейди по ссылке: %s/login/change-password/%s",
@@ -430,8 +442,11 @@ public class UserServiceDefault implements UserService {
 
     @Override
     public User getCurrentUser() {
-        String email = ((SecurityUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUsername();
-        return userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("user not found"));
+        String email = ((SecurityUser) SecurityContextHolder
+                .getContext().getAuthentication().getPrincipal()).getUsername();
+        return userRepository.findByEmail(email).orElseThrow(
+                () -> new UsernameNotFoundException("user not found")
+        );
     }
 
     @Override

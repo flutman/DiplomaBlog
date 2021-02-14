@@ -8,8 +8,7 @@ import com.example.diploma.data.response.CaptchaResponse;
 import com.example.diploma.data.response.LoginResponse;
 import com.example.diploma.data.response.RegisterResponse;
 import com.example.diploma.data.response.base.ResultResponse;
-import com.example.diploma.data.response.type.NewPostResponse;
-import com.example.diploma.data.response.type.PasswordError;
+import com.example.diploma.data.response.type.PasswordChangeResponse;
 import com.example.diploma.service.UserService;
 import com.example.diploma.service.impl.CaptchaService;
 import lombok.AllArgsConstructor;
@@ -61,14 +60,13 @@ public class ApiAuthController {
     }
 
     @PostMapping("/restore")
-    public ResponseEntity<ResultResponse<NewPostResponse>> restorePassword(@RequestBody RestorePasswordRequest request) {
-        ResultResponse<NewPostResponse> response = userService.restorePassword(request.getEmail());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ResultResponse<?>> restorePassword(@RequestBody RestorePasswordRequest request) {
+        return ResponseEntity.ok(userService.restorePassword(request.getEmail()));
     }
 
     @PostMapping("/password")
-    public ResponseEntity<ResultResponse<PasswordError>> changePassword(@RequestBody PasswordChangeRequest request) {
-        ResultResponse<PasswordError> response = userService.changePassword(request);
+    public ResponseEntity<ResultResponse<PasswordChangeResponse>> changePassword(@RequestBody PasswordChangeRequest request) {
+        ResultResponse<PasswordChangeResponse> response = userService.changePassword(request);
         return ResponseEntity.ok(response);
     }
 
