@@ -6,12 +6,14 @@ import com.example.diploma.dto.UserDto;
 import com.example.diploma.model.Post;
 import com.example.diploma.model.Tag;
 import com.example.diploma.model.User;
+import com.example.diploma.repository.PostRepository;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EntityMapper {
-    public EntityMapper() {
-    }
 
     public PlainPostDto postToPlainPostDto(Post post) {
         PlainPostDto plainPostDto = new PlainPostDto();
@@ -42,10 +44,10 @@ public class EntityMapper {
         return userDto;
     }
 
-    public TagDto tagToTagDto(Tag tag, long allPostList) {
+    public TagDto tagToTagDto(String tagName, long postWithTagCount, long postsCount) {
         TagDto tagDto = new TagDto();
-        tagDto.setName(tag.getName());
-        Double weight = (( (double) tag.getPosts().size() / allPostList) * allPostList / 10 );
+        tagDto.setName(tagName);
+        double weight = (( (double) postWithTagCount / postsCount) * postsCount / 10 );
 
         tagDto.setWeight(weight);
         return tagDto;

@@ -56,13 +56,8 @@ public class PostServiceDefault implements PostService {
 
     @Override
     public PostResponse getPosts(String mode, Pageable pageable) {
-        List<Post> posts;
-        Page<Post> pagePost = Page.empty();
-        if (mode != null) {
-            pagePost = findByMode(mode, pageable);
-        }
-
-        posts = pagePost.getContent();
+        Page<Post> pagePost = findByMode(mode, pageable);
+        List<Post> posts = pagePost.getContent();
 
         List<PlainPostDto> postsList = new ArrayList<>();
         for (Post post : posts) {

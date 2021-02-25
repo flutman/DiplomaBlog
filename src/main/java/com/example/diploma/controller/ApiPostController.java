@@ -39,7 +39,7 @@ public class ApiPostController {
     public ResponseEntity<PostResponse> getAllPosts(
             @RequestParam Integer offset,
             @RequestParam Integer limit,
-            @RequestParam String mode
+            @RequestParam(defaultValue = "recent") String mode
     ) {
         PostResponse response = postService.getPosts(mode, PageRequest.of((int) offset / limit, limit));
         return ResponseEntity.ok(response);
