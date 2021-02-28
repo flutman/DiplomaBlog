@@ -8,6 +8,9 @@ import com.example.diploma.repository.PostRepository;
 import com.example.diploma.repository.TagRepository;
 import com.example.diploma.service.TagService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -15,18 +18,21 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class TagServiceDefault implements TagService {
     private final TagRepository repository;
     private final PostRepository postRepository;
     private final EntityMapper entityMapper;
 
+    @Cacheable("tags")
     public TagResponse getTags() {
         List<Tag> tags = new ArrayList<>(repository.findTagOfPublishedPosts());
 
         List<TagDto> tagsList = new ArrayList<>();
         long postSize = postRepository.getCountPosts();
         for (Tag tag : tags) {
+            log.info("!!!!!! TAG stat request!!!!!!");
             long postCountWithTag = postRepository.findPostCountByTag(tag.getName());
             String tagName = tag.getName();
             TagDto tagDto = entityMapper.tagToTagDto(tagName, postCountWithTag, postSize);
@@ -54,4 +60,19 @@ public class TagServiceDefault implements TagService {
         return tags;
     }
 
+    @Override
+    @CachePut(value = "tags", key = "#name")
+    public Tag saveNewTag(String name) {
+        return repository.save(new Tag(name));
+    }
+
+    @Override
+    public void deletePrevTags(List<Tag> tagList) {
+        repository.deleteAll(tagList);
+    }
+
+    @Override
+    public Tag findTagByName(String name) {
+        return repository.findByNameIgnoreCase(name);
+    }
 }

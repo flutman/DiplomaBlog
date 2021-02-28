@@ -1,11 +1,18 @@
 package com.example.diploma.config;
 
+import com.google.common.cache.CacheBuilder;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Getter
@@ -47,5 +54,20 @@ public class AppConfig {
 
     public Integer getUserIdBySessionId(String sessionId) {
         return sessions.remove(sessionId);
+    }
+
+    @Bean("myCacheManager")
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager() {
+            @Override
+            protected Cache createConcurrentMapCache(String name) {
+                return new ConcurrentMapCache(
+                        name,
+                        CacheBuilder.newBuilder()
+                                .expireAfterWrite(1, TimeUnit.MINUTES)
+                                .build().asMap(),
+                        false);
+            }
+        };
     }
 }

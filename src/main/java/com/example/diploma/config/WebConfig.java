@@ -10,11 +10,6 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.io.File;
-import java.nio.file.Path;
-
-import static org.assertj.core.util.Strings.concat;
-
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
     @Value("${app.upload-path}")

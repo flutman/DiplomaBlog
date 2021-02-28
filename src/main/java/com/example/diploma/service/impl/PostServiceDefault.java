@@ -19,11 +19,11 @@ import com.example.diploma.model.Post;
 import com.example.diploma.model.Tag;
 import com.example.diploma.model.User;
 import com.example.diploma.repository.PostRepository;
-import com.example.diploma.repository.TagRepository;
 import com.example.diploma.repository.UserRepository;
 import com.example.diploma.security.SecurityUser;
 import com.example.diploma.service.GlobalSettingService;
 import com.example.diploma.service.PostService;
+import com.example.diploma.service.TagService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +49,7 @@ import java.util.stream.Collectors;
 public class PostServiceDefault implements PostService {
     private final PostRepository repository;
     private final UserRepository userRepository;
-    private final TagRepository tagRepository;
+    private final TagService tagService;
     private final GlobalSettingService globalSettingService;
 
     private EntityMapper entityMapper;
@@ -283,7 +283,7 @@ public class PostServiceDefault implements PostService {
 
         //delete previous tags
         List<Tag> prevTags = post.getTags();
-        tagRepository.deleteAll(prevTags);
+        tagService.deletePrevTags(prevTags);
 
         ModerationStatus postStatus = (checkCurrentUser().getIsModerator() == 1) ?
                 post.getModerationStatus() :
@@ -305,8 +305,8 @@ public class PostServiceDefault implements PostService {
     }
 
     private Tag takeTag(String name) {
-        Tag tag = tagRepository.findByNameIgnoreCase(name);
-        return (tag != null) ? tag : tagRepository.save(new Tag(name));
+        Tag tag = tagService.findTagByName(name);
+        return (tag != null) ? tag : tagService.saveNewTag(name);
     }
 
     public User checkCurrentUser() {
