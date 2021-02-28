@@ -17,6 +17,6 @@ public class NewPostRequest {
     private String title;
     private List<String> tags;
     @NotBlank(message = "Текст поста не установлен")
-    @Size(min = 50, message = "Заголовок менее 50 символов")
+    @Size(min = 50, message = "Текст поста менее 50 символов")
     private String text;
 }
